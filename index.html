@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borderland OS v2.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-red: #ff003c;
+            --neon-dim: #5a0015;
+            --bg-color: #050505;
+            --grid-color: #1a1a1a;
+            --text-main: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Efeito CRT / Scanlines */
+        .crt::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .hud-border {
+            border: 1px solid var(--neon-red);
+            box-shadow: 0 0 10px var(--neon-dim), inset 0 0 20px rgba(255, 0, 60, 0.1);
+            position: relative;
+        }
+
+        .hud-border::after {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 10px; height: 10px;
+            border-top: 2px solid var(--neon-red);
+            border-left: 2px solid var(--neon-red);
+        }
+        .hud-border::before {
+            content: '';
+            position: absolute;
+            bottom: -2px; right: -2px;
+            width: 10px; height: 10px;
+            border-bottom: 2px solid var(--neon-red);
+            border-right: 2px solid var(--neon-red);
+        }
+
+        .btn-action {
+            background: linear-gradient(45deg, #2b000a 0%, #000 100%);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .btn-action:hover:not(:disabled) {
+            background: var(--neon-red);
+            color: black;
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+        .btn-action:disabled {
+            border-color: #333;
+            color: #333;
+            background: #111;
+            cursor: not-allowed;
+        }
+
+        .log-entry {
+            border-left: 2px solid var(--neon-red);
+            padding-left: 12px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            animation: typeIn 0.3s ease-out;
+            background: linear-gradient(90deg, rgba(255,0,60,0.1) 0%, transparent 100%);
+        }
+        @keyframes typeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Raridades */
+        .rarity-common { color: #a1a1aa; text-shadow: 0 0 2px rgba(161, 161, 170, 0.5); }
+        .rarity-uncommon { color: #4ade80; text-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
+        .rarity-rare { color: #3b82f6; text-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+        .rarity-epic { color: #d946ef; text-shadow: 0 0 8px rgba(217, 70, 239, 0.6); }
+        .rarity-legendary { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
+
+        .visto-pulse { animation: pulseAlert 1.5s infinite; color: #ff003c; }
+        @keyframes pulseAlert { 
+            0% { text-shadow: 0 0 5px #ff003c; opacity: 1; } 
+            50% { text-shadow: 0 0 20px #ff003c; opacity: 0.5; } 
+            100% { text-shadow: 0 0 5px #ff003c; opacity: 1; } 
+        }
+
+        .control-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .visto-container:hover .control-btn {
+            opacity: 1;
+        }
+
+        ::-webkit-scrollbar { width: 6px; background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-red); border-radius: 2px; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 lg:p-6 crt">
+
+    <!-- SETUP MODAL -->
+    <div id="setup-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
+        <div class="hud-border bg-black p-8 max-w-md w-full relative">
+            <h1 class="text-3xl font-bold text-[#ff003c] mb-2 tracking-tighter uppercase text-center glitch">BORDERLAND OS</h1>
+            <p class="text-xs text-center opacity-60 mb-8 tracking-[0.2em]">INICIALIZAÇÃO DE SISTEMA DE VISTO</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-xs uppercase font-bold mb-2 text-zinc-500 tracking-widest">DIAS DE VISTO ATUAIS</label>
+                    <input type="number" id="input-visto" value="3" class="w-full bg-black border border-[#ff003c] p-4 text-3xl font-bold text-[#ff003c] focus:outline-none focus:bg-[#1a0005] text-center">
+                </div>
+            </div>
+
+            <button id="start-btn" class="w-full mt-8 btn-action py-4 font-bold text-xl tracking-widest">
+                INICIAR SESSÃO
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN INTERFACE -->
+    <div id="capture-area" class="w-full max-w-6xl bg-black/80 backdrop-blur-sm p-4 lg:p-8 hud-border relative min-h-[80vh]">
+        
+        <!-- Top Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start border-b border-[#33000d] pb-6 mb-6 gap-6">
+            <div>
+                <h2 class="text-4xl font-bold text-[#ff003c] tracking-tighter" style="text-shadow: 0 0 10px #ff003c;">STATUS: ATIVO</h2>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="exportarImagem()" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 uppercase tracking-widest">Salvar IMG</button>
+                    <button onclick="mostrarAjuda()" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 uppercase tracking-widest">Lista de Loot</button>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <div class="bg-black border border-zinc-800 p-4 min-w-[120px] text-center">
+                    <div class="text-[10px] text-zinc-500 uppercase tracking-[0.2em]">DIA</div>
+                    <div class="text-4xl font-bold text-white" id="day-counter">01</div>
+                </div>
+                <!-- Visto Counter with Manual Controls -->
+                <div class="bg-black border border-[#ff003c] p-4 min-w-[120px] text-center shadow-[0_0_15px_rgba(255,0,60,0.2)] relative visto-container">
+                    <div class="text-[10px] text-[#ff003c] uppercase tracking-[0.2em]">VISTO</div>
+                    <div class="text-4xl font-bold text-[#ff003c]" id="visto-counter">03</div>
+                    
+                    <div class="absolute -bottom-3 left-0 w-full flex justify-center gap-1 control-btn">
+                        <button onclick="adjustVisto(-1)" class="text-[10px] font-bold bg-zinc-900 border border-[#ff003c] text-[#ff003c] w-6 h-4 flex items-center justify-center hover:bg-[#ff003c] hover:text-black">-</button>
+                        <button onclick="adjustVisto(1)" class="text-[10px] font-bold bg-zinc-900 border border-[#ff003c] text-[#ff003c] w-6 h-4 flex items-center justify-center hover:bg-[#ff003c] hover:text-black">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- LEFT COLUMN: Actions & Events -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Main Action -->
+                <button id="advance-btn" class="w-full btn-action py-8 text-2xl font-bold shadow-lg relative overflow-hidden group">
+                    <span class="relative z-10">DORMIR / AVANÇAR</span>
+                    <div class="absolute inset-0 bg-[#ff003c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 opacity-20"></div>
+                    <div class="text-[10px] mt-2 opacity-70 tracking-widest relative z-10">CONSUMIR 1 DIA DE VISTO</div>
+                </button>
+
+                <!-- Next Events -->
+                <div class="bg-black/50 border border-zinc-800 p-4">
+                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 border-b border-[#33000d] pb-2">Próximos Eventos</h3>
+                    <ul class="space-y-3 text-sm" id="next-events">
+                        <!-- JS Generated -->
+                    </ul>
+                </div>
+
+                <!-- Inventory -->
+                <div class="bg-black/50 border border-zinc-800 p-4 flex-grow flex flex-col h-[400px]">
+                    <div class="flex justify-between items-center mb-4 border-b border-[#33000d] pb-2">
+                        <h3 class="text-xs text-zinc-400 uppercase tracking-[0.3em]">Mochila</h3>
+                        <span class="text-[9px] text-zinc-600" id="item-count">0 ITENS</span>
+                    </div>
+                    <div id="inventory-list" class="overflow-y-auto space-y-1 pr-2 flex-grow">
+                        <span class="opacity-30 italic text-xs">Vazio...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Logs & Cards -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Log System -->
+                <div class="bg-black border border-zinc-800 p-4 h-[300px] flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-20 text-[#ff003c] text-6xl font-bold select-none">LOG</div>
+                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 z-10">Diário do Sistema</h3>
+                    
+                    <div id="log-container" class="flex-grow overflow-y-auto pr-2 font-mono text-sm z-10">
+                        <div class="log-entry">Sistema online. Bem-vindo a Borderland.</div>
+                    </div>
+                </div>
+
+                <!-- Cards Collection -->
+                <div class="bg-black/50 border border-zinc-800 p-6">
+                    <h3 class="text-xs text-zinc-400 uppercase tracking-[0.3em] mb-4">Cartas de Visto Coletadas</h3>
+                    <div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="cards-grid">
+                        <!-- Cards JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    
+    <!-- GAME MODAL -->
+    <div id="game-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
+        <div class="hud-border bg-zinc-900 p-8 max-w-md w-full text-center">
+            <h2 class="text-4xl font-bold text-[#ff003c] mb-2 tracking-tighter">JOGO INICIADO</h2>
+            <div class="w-full h-[1px] bg-[#ff003c] mb-6"></div>
+            
+            <div class="bg-black border border-[#ff003c] p-10 mb-8 inline-block shadow-[0_0_30px_rgba(255,0,60,0.15)]">
+                <div class="text-8xl font-bold text-white mb-2" id="modal-card-val">?</div>
+                <div class="text-3xl font-bold" id="modal-card-suit">NAIPE</div>
+            </div>
+
+            <p class="text-sm opacity-70 mb-8">Narre sua sobrevivência. A carta será adicionada ao registro, mas o visto deve ser gerenciado manualmente.</p>
+            <button id="close-modal" class="btn-action w-full py-4 font-bold">REGISTRAR CARTA</button>
+        </div>
+    </div>
+
+    <!-- LOOT MODAL -->
+    <div id="loot-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
+        <div class="hud-border bg-zinc-900 p-8 max-w-md w-full text-center">
+            <h2 class="text-2xl font-bold text-purple-400 mb-2 tracking-tighter" id="loot-title">ITEM ENCONTRADO</h2>
+            <div class="w-full h-[1px] bg-purple-500 mb-6"></div>
+            
+            <div class="py-6">
+                <div id="loot-rarity-display" class="text-xs font-bold uppercase tracking-[0.3em] mb-2">RARIDADE</div>
+                <div id="loot-name-display" class="text-3xl font-bold text-white mb-2">NOME DO ITEM</div>
+                <div id="loot-type-display" class="text-xs opacity-50 uppercase bg-black/50 inline-block px-2 py-1 rounded border border-zinc-700">TIPO</div>
+            </div>
+
+            <button onclick="fecharLootModal()" class="btn-action w-full py-4 font-bold border-purple-500 text-purple-400 hover:text-black hover:bg-purple-500 hover:shadow-[0_0_20px_purple]">PEGAR ITEM</button>
+        </div>
+    </div>
+
+    <!-- LISTA DE ITENS MODAL -->
+    <div id="help-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
+        <div class="hud-border bg-black p-6 max-w-4xl w-full h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+            <h2 class="text-xl text-[#ff003c] font-bold uppercase tracking-widest mb-6 border-b border-zinc-800 pb-2">Banco de Dados de Itens</h2>
+            <div class="overflow-y-auto flex-grow pr-4 space-y-8">
+                
+                <div>
+                    <h3 class="text-white font-bold mb-3 uppercase tracking-widest border-l-4 border-zinc-500 pl-2">📦 Loot Comum (Dia 6)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs" id="common-loot-table"></div>
+                </div>
+
+                <div>
+                    <h3 class="text-purple-400 font-bold mb-3 uppercase tracking-widest border-l-4 border-purple-500 pl-2">🔫 Arsenal Especial (Dia 12)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="special-loot-table"></div>
+                </div>
+
+            </div>
+            <button onclick="document.getElementById('help-modal').classList.add('hidden')" class="mt-4 btn-action w-full py-3 font-bold text-xs">FECHAR</button>
+        </div>
+    </div>
+
+    <script>
+        const NAIPES = [
+            { nome: 'ESPADAS', icon: '♠️', cor: 'text-zinc-400' },
+            { nome: 'PAUS', icon: '♣️', cor: 'text-green-500' },
+            { nome: 'OUROS', icon: '♦️', cor: 'text-red-500' },
+            { nome: 'COPAS', icon: '♥️', cor: 'text-red-600' }
+        ];
+
+        const RARIDADES = {
+            "Comum": "rarity-common",
+            "Incomum": "rarity-uncommon",
+            "Raro": "rarity-rare",
+            "Épico": "rarity-epic",
+            "Lendário": "rarity-legendary"
+        };
+
+        // ==========================================
+        // 50+ ITENS COMUNS & LEGAIS (Dia 6)
+        // Expandido para maior variedade
+        // ==========================================
+        const ITENS_COMUNS = [
+            // ARMAMENTO IMPROVISADO & DEFESA
+            { nome: "Taco de Beisebol (Madeira)", tipo: "Arma Branca", raridade: "Incomum" },
+            { nome: "Taco de Beisebol (Alumínio)", tipo: "Arma Branca", raridade: "Raro" },
+            { nome: "Pé de Cabra", tipo: "Ferramenta/Arma", raridade: "Incomum" },
+            { nome: "Faca de Caça", tipo: "Arma Branca", raridade: "Raro" },
+            { nome: "Canivete Suíço", tipo: "Ferramenta", raridade: "Comum" },
+            { nome: "Spray de Pimenta", tipo: "Defesa", raridade: "Incomum" },
+            { nome: "Taser de Contato (Carga Baixa)", tipo: "Arma Especial", raridade: "Raro" },
+            { nome: "Martelo de Obra", tipo: "Ferramenta/Arma", raridade: "Comum" },
+            { nome: "Chave Inglesa Pesada", tipo: "Ferramenta/Arma", raridade: "Comum" },
+            { nome: "Soco Inglês", tipo: "Arma Branca", raridade: "Incomum" },
+            { nome: "Cassetete Retrátil", tipo: "Arma Branca", raridade: "Raro" },
+            { nome: "Corrente de Aço (50cm)", tipo: "Arma Branca", raridade: "Comum" },
+            
+            // MUNIÇÃO (Crucial)
+            { nome: "Munição 9mm (x3 balas)", tipo: "Munição", raridade: "Incomum" },
+            { nome: "Munição 9mm (Caixa c/ 10)", tipo: "Munição", raridade: "Raro" },
+            { nome: "Munição .38 (x2 balas)", tipo: "Munição", raridade: "Incomum" },
+            { nome: "Munição .38 (x6 balas)", tipo: "Munição", raridade: "Raro" },
+            { nome: "Cartucho Calibre 12 (x2)", tipo: "Munição", raridade: "Raro" },
+            { nome: "Flechas de Carbono (x3)", tipo: "Munição", raridade: "Raro" },
+            { nome: "Virotes de Besta (x3)", tipo: "Munição", raridade: "Raro" },
+            
+            // SUPRIMENTOS MÉDICOS
+            { nome: "Kit de Primeiros Socorros", tipo: "Medicina", raridade: "Raro" },
+            { nome: "Bandagens Estéreis", tipo: "Medicina", raridade: "Comum" },
+            { nome: "Álcool 70% (Garrafa)", tipo: "Medicina/Combustível", raridade: "Comum" },
+            { nome: "Analgésicos Fortes", tipo: "Medicina", raridade: "Incomum" },
+            { nome: "Gaze e Esparadrapo", tipo: "Medicina", raridade: "Comum" },
+            { nome: "Adrenalina Injetável", tipo: "Medicina", raridade: "Épico" },
+            { nome: "Antibióticos (Cartela)", tipo: "Medicina", raridade: "Raro" },
+
+            // FERRAMENTAS & CRAFTING
+            { nome: "Lanterna Tática", tipo: "Ferramenta", raridade: "Incomum" },
+            { nome: "Pilha AA (Pacote x4)", tipo: "Recurso", raridade: "Comum" },
+            { nome: "Isqueiro Zippo (Cheio)", tipo: "Ferramenta", raridade: "Incomum" },
+            { nome: "Corda de Escalada (10m)", tipo: "Ferramenta", raridade: "Incomum" },
+            { nome: "Fita Silver Tape", tipo: "Ferramenta", raridade: "Comum" },
+            { nome: "Binóculos", tipo: "Ferramenta", raridade: "Raro" },
+            { nome: "Powerbank (Carga Média)", tipo: "Eletrônico", raridade: "Incomum" },
+            { nome: "Walkie-Talkie (Sem Bateria)", tipo: "Eletrônico", raridade: "Incomum" },
+            { nome: "Máscara de Gás (Filtro Velho)", tipo: "Proteção", raridade: "Raro" },
+            { nome: "Mochila Militar (Pequena)", tipo: "Utilitário", raridade: "Raro" },
+            { nome: "Sinalizador (Flare)", tipo: "Consumível", raridade: "Incomum" },
+            { nome: "Pregos (Caixa Pequena)", tipo: "Crafting", raridade: "Comum" },
+            { nome: "Arame Farpado (Rolo)", tipo: "Crafting", raridade: "Incomum" },
+            { nome: "Cola Super Forte", tipo: "Crafting", raridade: "Comum" },
+            { nome: "Óleo Lubrificante", tipo: "Manutenção", raridade: "Comum" },
+
+            // SOBREVIVÊNCIA BÁSICA
+            { nome: "Garrafa de Água (1.5L)", tipo: "Consumível", raridade: "Comum" },
+            { nome: "Ração Militar (MRE)", tipo: "Consumível", raridade: "Incomum" },
+            { nome: "Barra de Proteína", tipo: "Consumível", raridade: "Comum" },
+            { nome: "Lata de Atum", tipo: "Consumível", raridade: "Comum" },
+            { nome: "Biscoito de Arroz", tipo: "Consumível", raridade: "Comum" },
+            { nome: "Maço de Cigarros", tipo: "Moeda de Troca", raridade: "Comum" },
+            { nome: "Relógio Digital Simples", tipo: "Utilitário", raridade: "Comum" },
+            { nome: "Garrafa de Vodka Barata", tipo: "Consumível", raridade: "Incomum" },
+            { nome: "Baralho de Cartas", tipo: "Lazer", raridade: "Comum" }
+        ];
+
+        // ==========================================
+        // ARSENAL ESPECIAL (Dia 12)
+        // Armas de fogo SEMPRE vêm vazias
+        // ==========================================
+        const ARMAS_ESPECIAIS = [
+            { nome: "Pistola Glock 17 [VAZIA]", tipo: "Arma de Fogo", raridade: "Épico" },
+            { nome: "Revólver .38 [VAZIO]", tipo: "Arma de Fogo", raridade: "Raro" },
+            { nome: "Escopeta Serrada [VAZIA]", tipo: "Arma de Fogo", raridade: "Lendário" },
+            { nome: "Rifle de Caça [VAZIO]", tipo: "Arma de Fogo", raridade: "Lendário" },
+            
+            { nome: "Katana Tradicional", tipo: "Arma Branca", raridade: "Épico" },
+            { nome: "Machado de Bombeiro", tipo: "Arma Branca", raridade: "Raro" },
+            { nome: "Facão de Mato (Machete)", tipo: "Arma Branca", raridade: "Incomum" },
+            
+            { nome: "Arco Composto [SEM FLECHAS]", tipo: "Arma Distância", raridade: "Épico" },
+            { nome: "Besta de Mão [SEM VIROTES]", tipo: "Arma Distância", raridade: "Raro" },
+            
+            { nome: "Colete à Prova de Balas (Leve)", tipo: "Proteção", raridade: "Épico" },
+            { nome: "Taser Policial (Carga Cheia)", tipo: "Arma Especial", raridade: "Raro" }
+        ];
+
+        // ESTADO
+        let estado = {
+            dia: 1,
+            visto: 3,
+            inventario: [],
+            cartas: []
+        };
+
+        // UI ELEMENTS
+        const ui = {
+            day: document.getElementById('day-counter'),
+            visto: document.getElementById('visto-counter'),
+            log: document.getElementById('log-container'),
+            nextEvents: document.getElementById('next-events'),
+            inventory: document.getElementById('inventory-list'),
+            cards: document.getElementById('cards-grid'),
+            itemCount: document.getElementById('item-count'),
+            setupModal: document.getElementById('setup-modal'),
+            gameModal: document.getElementById('game-modal'),
+            lootModal: document.getElementById('loot-modal'),
+            helpModal: document.getElementById('help-modal')
+        };
+
+        // INICIALIZAÇÃO
+        document.getElementById('start-btn').addEventListener('click', () => {
+            const inputVisto = parseInt(document.getElementById('input-visto').value);
+            estado.visto = isNaN(inputVisto) ? 3 : inputVisto;
+            estado.dia = 1; // Sempre começa no dia 1
+            
+            ui.setupModal.classList.add('hidden');
+            updateUI();
+            addLog("SISTEMA INICIALIZADO.");
+            addLog("VISTO MONITORADO.");
+            
+            // Popula a tabela de ajuda
+            renderHelpTable();
+        });
+
+        // AJUSTE MANUAL DE VISTO
+        window.adjustVisto = (amount) => {
+            estado.visto += amount;
+            updateUI();
+            addLog(`Visto ajustado manualmente: ${amount > 0 ? '+' : ''}${amount}`);
+        };
+
+        function addLog(msg) {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span class="text-[#ff003c] font-bold mr-2">[DIA ${String(estado.dia).padStart(2,'0')}]</span> <span class="text-zinc-300">${msg}</span>`;
+            ui.log.prepend(div);
+        }
+
+        function renderHelpTable() {
+            const renderRow = (item) => `
+                <div class="flex justify-between items-center bg-zinc-900/50 p-2 border border-zinc-800 hover:border-zinc-600 transition-colors">
+                    <span class="${RARIDADES[item.raridade]} font-bold text-[10px] uppercase">${item.nome}</span>
+                </div>
+            `;
+            document.getElementById('common-loot-table').innerHTML = ITENS_COMUNS.map(renderRow).join('');
+            document.getElementById('special-loot-table').innerHTML = ARMAS_ESPECIAIS.map(renderRow).join('');
+        }
+
+        function updateUI() {
+            ui.day.innerText = String(estado.dia).padStart(2, '0');
+            ui.visto.innerText = String(estado.visto).padStart(2, '0');
+
+            // Alerta de Visto
+            if (estado.visto <= 1) ui.visto.classList.add('visto-pulse');
+            else ui.visto.classList.remove('visto-pulse');
+
+            // Game Over Check (Visual Only)
+            const btn = document.getElementById('advance-btn');
+            if (estado.visto <= 0) {
+                ui.visto.innerText = "00";
+                // Não bloqueamos totalmente caso queiram ajustar manualmente, mas avisamos
+                addLog("ALERTA CRÍTICO: Visto Expirado.");
+            }
+
+            // Próximos Eventos
+            const d3 = 3 - (estado.dia % 3 === 0 ? 3 : estado.dia % 3);
+            const d6 = 6 - (estado.dia % 6 === 0 ? 6 : estado.dia % 6);
+            const d12 = 12 - (estado.dia % 12 === 0 ? 12 : estado.dia % 12);
+
+            ui.nextEvents.innerHTML = `
+                <li class="flex justify-between items-center text-zinc-400">
+                    <span>⚔️ JOGO DE CARTA</span> 
+                    <span class="text-[#ff003c] font-bold bg-[#1a0005] px-2 border border-[#33000d]">${d3 === 0 ? 'HOJE' : d3 + 'd'}</span>
+                </li>
+                <li class="flex justify-between items-center text-zinc-400">
+                    <span>📦 LOOT COMUM</span> 
+                    <span class="text-green-500 font-bold bg-[#001a05] px-2 border border-green-900">${d6 === 0 ? 'HOJE' : d6 + 'd'}</span>
+                </li>
+                <li class="flex justify-between items-center text-zinc-400">
+                    <span>🔫 ARSENAL</span> 
+                    <span class="text-purple-500 font-bold bg-[#1a001a] px-2 border border-purple-900">${d12 === 0 ? 'HOJE' : d12 + 'd'}</span>
+                </li>
+            `;
+
+            // Inventário
+            ui.itemCount.innerText = `${estado.inventario.length} ITENS`;
+            if (estado.inventario.length === 0) {
+                ui.inventory.innerHTML = `<span class="opacity-30 italic text-xs p-2">Mochila vazia...</span>`;
+            } else {
+                ui.inventory.innerHTML = estado.inventario.map(item => `
+                    <div class="flex justify-between items-center bg-black p-2 border-b border-zinc-900 group hover:bg-zinc-900 transition-colors">
+                        <span class="${RARIDADES[item.raridade]} font-bold text-[11px] uppercase group-hover:pl-1 transition-all">${item.nome}</span>
+                        <span class="text-[9px] text-zinc-600 border border-zinc-800 px-1 rounded">${item.tipo}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Cartas
+            ui.cards.innerHTML = estado.cartas.map(c => `
+                <div class="aspect-[2/3] flex flex-col items-center justify-center bg-zinc-900 border border-zinc-700 relative overflow-hidden group hover:border-[#ff003c] transition-colors">
+                    <span class="text-sm font-bold leading-none ${c.naipe.cor} z-10">${c.valor}</span>
+                    <span class="text-xs ${c.naipe.cor} z-10">${c.naipe.icon}</span>
+                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                </div>
+            `).join('');
+        }
+
+        // TIME SKIP LOGIC
+        document.getElementById('advance-btn').addEventListener('click', () => {
+            if (estado.visto <= 0 && !confirm("Visto expirado. Continuar mesmo assim?")) return;
+
+            estado.dia++;
+            estado.visto--; 
+            
+            // Prioridade: Jogo > Arma > Loot
+            if (estado.dia % 3 === 0) {
+                triggerGame();
+            } else if (estado.dia % 12 === 0) {
+                // Dia 12: ARMA (Substitui Loot Comum)
+                triggerLoot(ARMAS_ESPECIAIS, "ARSENAL");
+            } else if (estado.dia % 6 === 0) {
+                // Dia 6: COMUM
+                triggerLoot(ITENS_COMUNS, "LOOT COMUM");
+            } else {
+                addLog("Dia concluído. Visto -1.");
+            }
+
+            updateUI();
+        });
+
+        function triggerGame() {
+            const valor = Math.floor(Math.random() * 5) + 1;
+            const naipe = NAIPES[Math.floor(Math.random() * NAIPES.length)];
+            
+            document.getElementById('modal-card-val').innerText = valor;
+            const suitEl = document.getElementById('modal-card-suit');
+            suitEl.innerText = `${naipe.icon} ${naipe.nome}`;
+            suitEl.className = `text-3xl font-bold ${naipe.cor}`;
+            
+            ui.gameModal.classList.remove('hidden');
+            window.currentReward = { valor, naipe };
+        }
+
+        function triggerLoot(lista, titulo) {
+            const item = lista[Math.floor(Math.random() * lista.length)];
+            
+            // Setup Modal Loot
+            document.getElementById('loot-title').innerText = titulo;
+            document.getElementById('loot-name-display').innerText = item.nome;
+            document.getElementById('loot-type-display').innerText = item.tipo;
+            
+            const rarityEl = document.getElementById('loot-rarity-display');
+            rarityEl.innerText = item.raridade;
+            rarityEl.className = `text-xs font-bold uppercase tracking-[0.3em] mb-2 ${RARIDADES[item.raridade]}`;
+
+            ui.lootModal.classList.remove('hidden');
+            window.tempLoot = item;
+        }
+
+        function fecharLootModal() {
+            if (window.tempLoot) {
+                estado.inventario.push(window.tempLoot);
+                addLog(`Encontrado: ${window.tempLoot.nome}`);
+                window.tempLoot = null;
+            }
+            ui.lootModal.classList.add('hidden');
+            updateUI();
+        }
+
+        document.getElementById('close-modal').addEventListener('click', () => {
+            if (window.currentReward) {
+                estado.cartas.push(window.currentReward);
+                // REMOVIDO: estado.visto += window.currentReward.valor;
+                // Visto agora só é alterado manualmente ou pelo time skip
+                addLog(`VENCIDO: ${window.currentReward.valor} de ${window.currentReward.naipe.nome} (Visto não alterado)`);
+                window.currentReward = null;
+            }
+            ui.gameModal.classList.add('hidden');
+            updateUI();
+        });
+
+        // Utils
+        window.exportarImagem = () => {
+            html2canvas(document.getElementById('capture-area'), {
+                backgroundColor: '#050505',
+                scale: 2
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `borderland-status-dia-${estado.dia}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        };
+
+        window.mostrarAjuda = () => ui.helpModal.classList.remove('hidden');
+
+    </script>
+</body>
+</html>
