@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Borderland OS v2.2 (Fix Loot)</title>
+    <title>Borderland OS v2.5 (Immersive Update)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -65,6 +65,49 @@
             border-right: 2px solid var(--neon-red);
         }
 
+        /* Loot Box Style & Animation */
+        .loot-box {
+            border: 4px solid #4ade80;
+            background: radial-gradient(circle, #064e3b 0%, #000000 100%);
+            box-shadow: 0 0 20px #4ade80;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s;
+        }
+        .loot-box-epic {
+            border-color: #d946ef;
+            box-shadow: 0 0 25px #d946ef;
+            background: radial-gradient(circle, #4a044e 0%, #000000 100%);
+        }
+
+        /* Estado Fechado/Oculto */
+        .loot-hidden-content {
+            filter: blur(15px);
+            opacity: 0.2;
+            transform: scale(0.9);
+            transition: all 0.5s;
+        }
+        
+        /* Animação de Abrir */
+        .shake-box {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(1deg); }
+            20%, 80% { transform: translate3d(2px, 0, 0) rotate(-1deg); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(2deg); }
+            40%, 60% { transform: translate3d(4px, 0, 0) rotate(-2deg); }
+        }
+
+        .reveal-flash {
+            animation: flash 0.5s ease-out;
+        }
+        @keyframes flash {
+            0% { background-color: white; }
+            100% { background-color: transparent; }
+        }
+
         .btn-action {
             background: linear-gradient(45deg, #2b000a 0%, #000 100%);
             border: 1px solid var(--neon-red);
@@ -85,15 +128,26 @@
             cursor: not-allowed;
         }
 
+        /* Novos Estilos de Log */
         .log-entry {
-            border-left: 2px solid var(--neon-red);
-            padding-left: 12px;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            animation: typeIn 0.3s ease-out;
-            background: linear-gradient(90deg, rgba(255,0,60,0.1) 0%, transparent 100%);
+            border-left: 3px solid #333;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+            line-height: 1.4;
         }
-        @keyframes typeIn {
+        .log-sys { border-color: #555; color: #aaa; }
+        .log-game { border-color: #ff003c; background: linear-gradient(90deg, rgba(255,0,60,0.1), transparent); color: #ff99ac; }
+        .log-loot { border-color: #4ade80; background: linear-gradient(90deg, rgba(74,222,128,0.1), transparent); color: #bbf7d0; }
+        .log-epic { border-color: #d946ef; background: linear-gradient(90deg, rgba(217,70,239,0.1), transparent); color: #f5d0fe; }
+        
+        @keyframes slideIn {
             from { opacity: 0; transform: translateX(-10px); }
             to { opacity: 1; transform: translateX(0); }
         }
@@ -112,13 +166,8 @@
             100% { text-shadow: 0 0 5px #ff003c; opacity: 1; } 
         }
 
-        .control-btn {
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .visto-container:hover .control-btn {
-            opacity: 1;
-        }
+        .control-btn { opacity: 0; transition: opacity 0.2s; }
+        .visto-container:hover .control-btn { opacity: 1; }
 
         ::-webkit-scrollbar { width: 6px; background: #000; }
         ::-webkit-scrollbar-thumb { background: var(--neon-red); border-radius: 2px; }
@@ -130,7 +179,7 @@
     <div id="setup-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
         <div class="hud-border bg-black p-8 max-w-md w-full relative">
             <h1 class="text-3xl font-bold text-[#ff003c] mb-2 tracking-tighter uppercase text-center glitch">BORDERLAND OS</h1>
-            <p class="text-xs text-center opacity-60 mb-8 tracking-[0.2em]">INICIALIZAÇÃO DE SISTEMA DE VISTO</p>
+            <p class="text-xs text-center opacity-60 mb-8 tracking-[0.2em]">INICIALIZAÇÃO DE SISTEMA</p>
             
             <div class="space-y-6">
                 <div>
@@ -163,7 +212,7 @@
                     <div class="text-[10px] text-zinc-500 uppercase tracking-[0.2em]">DIA</div>
                     <div class="text-4xl font-bold text-white" id="day-counter">01</div>
                 </div>
-                <!-- Visto Counter with Manual Controls -->
+                <!-- Visto Counter -->
                 <div class="bg-black border border-[#ff003c] p-4 min-w-[120px] text-center shadow-[0_0_15px_rgba(255,0,60,0.2)] relative visto-container">
                     <div class="text-[10px] text-[#ff003c] uppercase tracking-[0.2em]">VISTO</div>
                     <div class="text-4xl font-bold text-[#ff003c]" id="visto-counter">03</div>
@@ -182,9 +231,9 @@
             <div class="lg:col-span-4 space-y-6">
                 <!-- Main Action -->
                 <button id="advance-btn" class="w-full btn-action py-8 text-2xl font-bold shadow-lg relative overflow-hidden group">
-                    <span class="relative z-10">DORMIR / AVANÇAR</span>
+                    <span class="relative z-10">AVANÇAR CICLO (3 DIAS)</span>
                     <div class="absolute inset-0 bg-[#ff003c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 opacity-20"></div>
-                    <div class="text-[10px] mt-2 opacity-70 tracking-widest relative z-10">CONSUMIR 1 DIA DE VISTO</div>
+                    <div class="text-[10px] mt-2 opacity-70 tracking-widest relative z-10">CONSUMIR 3 VISTOS & GERAR JOGO</div>
                 </button>
 
                 <!-- Next Events -->
@@ -212,11 +261,11 @@
                 
                 <!-- Log System -->
                 <div class="bg-black border border-zinc-800 p-4 h-[300px] flex flex-col relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-2 opacity-20 text-[#ff003c] text-6xl font-bold select-none">LOG</div>
-                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 z-10">Diário do Sistema</h3>
+                    <div class="absolute top-0 right-0 p-2 opacity-20 text-[#ff003c] text-6xl font-bold select-none">SYSTEM LOG</div>
+                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 z-10">Histórico de Operações</h3>
                     
                     <div id="log-container" class="flex-grow overflow-y-auto pr-2 font-mono text-sm z-10">
-                        <div class="log-entry">Sistema online. Bem-vindo a Borderland.</div>
+                        <!-- Logs here -->
                     </div>
                 </div>
 
@@ -236,33 +285,43 @@
     <!-- GAME MODAL -->
     <div id="game-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
         <div class="hud-border bg-zinc-900 p-8 max-w-md w-full text-center">
-            <h2 class="text-4xl font-bold text-[#ff003c] mb-2 tracking-tighter">JOGO INICIADO</h2>
+            <h2 class="text-4xl font-bold text-[#ff003c] mb-2 tracking-tighter">FIM DE CICLO</h2>
             <div class="w-full h-[1px] bg-[#ff003c] mb-6"></div>
             
+            <p class="text-xs text-zinc-500 mb-4 uppercase tracking-widest">Você sobreviveu a 3 dias. Jogo encontrado:</p>
+
             <div class="bg-black border border-[#ff003c] p-10 mb-8 inline-block shadow-[0_0_30px_rgba(255,0,60,0.15)]">
                 <div class="text-8xl font-bold text-white mb-2" id="modal-card-val">?</div>
                 <div class="text-3xl font-bold" id="modal-card-suit">NAIPE</div>
             </div>
 
-            <p class="text-sm opacity-70 mb-8">Narre sua sobrevivência. A carta será adicionada ao registro, mas o visto deve ser gerenciado manualmente.</p>
-            <button id="close-modal" class="btn-action w-full py-4 font-bold">REGISTRAR CARTA</button>
+            <p class="text-sm opacity-70 mb-8">Narre sua sobrevivência. A carta será adicionada ao registro.</p>
+            <button id="close-game-modal" class="btn-action w-full py-4 font-bold">REGISTRAR VITÓRIA</button>
         </div>
     </div>
 
-    <!-- LOOT MODAL -->
+    <!-- LOOT MODAL (CAIXINHA) -->
     <div id="loot-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-        <div class="hud-border bg-zinc-900 p-8 max-w-md w-full text-center">
-            <h2 class="text-2xl font-bold text-purple-400 mb-2 tracking-tighter" id="loot-title">ITEM ENCONTRADO</h2>
-            <div class="w-full h-[1px] bg-purple-500 mb-6"></div>
+        <div class="loot-box p-8 max-w-sm w-full text-center relative" id="loot-box-container">
+            <!-- Box Lid / Visuals -->
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-green-500 uppercase tracking-[0.2em] border border-green-500" id="loot-header-badge">SUPRIMENTO</div>
+
+            <h2 class="text-2xl font-bold text-white mb-6 mt-4 tracking-tighter drop-shadow-md" id="loot-title">CAIXA ENCONTRADA</h2>
             
-            <div class="py-6">
+            <!-- Conteúdo Oculto (Animado) -->
+            <div id="loot-content" class="py-4 border-t border-b border-white/20 my-4 bg-black/40 loot-hidden-content">
                 <div id="loot-rarity-display" class="text-xs font-bold uppercase tracking-[0.3em] mb-2">RARIDADE</div>
-                <div id="loot-name-display" class="text-3xl font-bold text-white mb-2">NOME DO ITEM</div>
-                <div id="loot-type-display" class="text-xs opacity-50 uppercase bg-black/50 inline-block px-2 py-1 rounded border border-zinc-700">TIPO</div>
+                <div id="loot-name-display" class="text-2xl font-bold text-white mb-2 break-words">NOME DO ITEM</div>
+                <div id="loot-type-display" class="text-[10px] opacity-70 uppercase bg-black/80 inline-block px-2 py-1 rounded border border-white/20">TIPO</div>
             </div>
 
-            <!-- Alterado: Removido onclick e adicionado ID para event listener -->
-            <button id="btn-claim-loot" class="btn-action w-full py-4 font-bold border-purple-500 text-purple-400 hover:text-black hover:bg-purple-500 hover:shadow-[0_0_20px_purple]">PEGAR ITEM</button>
+            <div class="h-8 flex justify-center items-center mb-2">
+                 <div id="loot-unknown-icon" class="text-4xl opacity-50">🔒</div>
+            </div>
+
+            <button id="btn-claim-loot" data-state="open" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2">
+                ABRIR
+            </button>
         </div>
     </div>
 
@@ -273,12 +332,12 @@
             <div class="overflow-y-auto flex-grow pr-4 space-y-8">
                 
                 <div>
-                    <h3 class="text-white font-bold mb-3 uppercase tracking-widest border-l-4 border-zinc-500 pl-2">📦 Loot Comum (Dia 6)</h3>
+                    <h3 class="text-white font-bold mb-3 uppercase tracking-widest border-l-4 border-zinc-500 pl-2">📦 Loot Comum (A cada 2 Ciclos)</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs" id="common-loot-table"></div>
                 </div>
 
                 <div>
-                    <h3 class="text-purple-400 font-bold mb-3 uppercase tracking-widest border-l-4 border-purple-500 pl-2">🔫 Arsenal Especial (Dia 12)</h3>
+                    <h3 class="text-purple-400 font-bold mb-3 uppercase tracking-widest border-l-4 border-purple-500 pl-2">🔫 Arsenal Especial (A cada 4 Ciclos)</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="special-loot-table"></div>
                 </div>
 
@@ -303,12 +362,7 @@
             "Lendário": "rarity-legendary"
         };
 
-        // ==========================================
-        // 50+ ITENS COMUNS & LEGAIS (Dia 6)
-        // Expandido para maior variedade
-        // ==========================================
         const ITENS_COMUNS = [
-            // ARMAMENTO IMPROVISADO & DEFESA
             { nome: "Taco de Beisebol (Madeira)", tipo: "Arma Branca", raridade: "Incomum" },
             { nome: "Taco de Beisebol (Alumínio)", tipo: "Arma Branca", raridade: "Raro" },
             { nome: "Pé de Cabra", tipo: "Ferramenta/Arma", raridade: "Incomum" },
@@ -321,8 +375,6 @@
             { nome: "Soco Inglês", tipo: "Arma Branca", raridade: "Incomum" },
             { nome: "Cassetete Retrátil", tipo: "Arma Branca", raridade: "Raro" },
             { nome: "Corrente de Aço (50cm)", tipo: "Arma Branca", raridade: "Comum" },
-            
-            // MUNIÇÃO (Crucial)
             { nome: "Munição 9mm (x3 balas)", tipo: "Munição", raridade: "Incomum" },
             { nome: "Munição 9mm (Caixa c/ 10)", tipo: "Munição", raridade: "Raro" },
             { nome: "Munição .38 (x2 balas)", tipo: "Munição", raridade: "Incomum" },
@@ -330,8 +382,6 @@
             { nome: "Cartucho Calibre 12 (x2)", tipo: "Munição", raridade: "Raro" },
             { nome: "Flechas de Carbono (x3)", tipo: "Munição", raridade: "Raro" },
             { nome: "Virotes de Besta (x3)", tipo: "Munição", raridade: "Raro" },
-            
-            // SUPRIMENTOS MÉDICOS
             { nome: "Kit de Primeiros Socorros", tipo: "Medicina", raridade: "Raro" },
             { nome: "Bandagens Estéreis", tipo: "Medicina", raridade: "Comum" },
             { nome: "Álcool 70% (Garrafa)", tipo: "Medicina/Combustível", raridade: "Comum" },
@@ -339,8 +389,6 @@
             { nome: "Gaze e Esparadrapo", tipo: "Medicina", raridade: "Comum" },
             { nome: "Adrenalina Injetável", tipo: "Medicina", raridade: "Épico" },
             { nome: "Antibióticos (Cartela)", tipo: "Medicina", raridade: "Raro" },
-
-            // FERRAMENTAS & CRAFTING
             { nome: "Lanterna Tática", tipo: "Ferramenta", raridade: "Incomum" },
             { nome: "Pilha AA (Pacote x4)", tipo: "Recurso", raridade: "Comum" },
             { nome: "Isqueiro Zippo (Cheio)", tipo: "Ferramenta", raridade: "Incomum" },
@@ -356,8 +404,6 @@
             { nome: "Arame Farpado (Rolo)", tipo: "Crafting", raridade: "Incomum" },
             { nome: "Cola Super Forte", tipo: "Crafting", raridade: "Comum" },
             { nome: "Óleo Lubrificante", tipo: "Manutenção", raridade: "Comum" },
-
-            // SOBREVIVÊNCIA BÁSICA
             { nome: "Garrafa de Água (1.5L)", tipo: "Consumível", raridade: "Comum" },
             { nome: "Ração Militar (MRE)", tipo: "Consumível", raridade: "Incomum" },
             { nome: "Barra de Proteína", tipo: "Consumível", raridade: "Comum" },
@@ -369,36 +415,35 @@
             { nome: "Baralho de Cartas", tipo: "Lazer", raridade: "Comum" }
         ];
 
-        // ==========================================
-        // ARSENAL ESPECIAL (Dia 12)
-        // Armas de fogo SEMPRE vêm vazias
-        // ==========================================
         const ARMAS_ESPECIAIS = [
             { nome: "Pistola Glock 17 [VAZIA]", tipo: "Arma de Fogo", raridade: "Épico" },
             { nome: "Revólver .38 [VAZIO]", tipo: "Arma de Fogo", raridade: "Raro" },
             { nome: "Escopeta Serrada [VAZIA]", tipo: "Arma de Fogo", raridade: "Lendário" },
             { nome: "Rifle de Caça [VAZIO]", tipo: "Arma de Fogo", raridade: "Lendário" },
-            
             { nome: "Katana Tradicional", tipo: "Arma Branca", raridade: "Épico" },
             { nome: "Machado de Bombeiro", tipo: "Arma Branca", raridade: "Raro" },
             { nome: "Facão de Mato (Machete)", tipo: "Arma Branca", raridade: "Incomum" },
-            
             { nome: "Arco Composto [SEM FLECHAS]", tipo: "Arma Distância", raridade: "Épico" },
             { nome: "Besta de Mão [SEM VIROTES]", tipo: "Arma Distância", raridade: "Raro" },
-            
             { nome: "Colete à Prova de Balas (Leve)", tipo: "Proteção", raridade: "Épico" },
             { nome: "Taser Policial (Carga Cheia)", tipo: "Arma Especial", raridade: "Raro" }
         ];
 
-        // ESTADO
+        // Estado Global
         let estado = {
             dia: 1,
             visto: 3,
             inventario: [],
             cartas: []
         };
+        
+        // Fila de Eventos (Event Queue)
+        // Estrutura: { type: 'GAME' | 'LOOT' | 'ARSENAL', data: any }
+        let eventQueue = [];
+        let isProcessingQueue = false;
+        
+        let itemLootAtual = null;
 
-        // UI ELEMENTS
         const ui = {
             day: document.getElementById('day-counter'),
             visto: document.getElementById('visto-counter'),
@@ -417,28 +462,48 @@
         document.getElementById('start-btn').addEventListener('click', () => {
             const inputVisto = parseInt(document.getElementById('input-visto').value);
             estado.visto = isNaN(inputVisto) ? 3 : inputVisto;
-            estado.dia = 1; // Sempre começa no dia 1
+            estado.dia = 1; 
             
             ui.setupModal.classList.add('hidden');
             updateUI();
-            addLog("SISTEMA INICIALIZADO.");
-            addLog("VISTO MONITORADO.");
-            
-            // Popula a tabela de ajuda
+            addLog("sys", "SYSTEM_BOOT: Protocolos de fronteira ativos.");
+            addLog("sys", "VITALS_CHECK: Sinais de vida confirmados.");
             renderHelpTable();
         });
 
-        // AJUSTE MANUAL DE VISTO
         window.adjustVisto = (amount) => {
             estado.visto += amount;
             updateUI();
-            addLog(`Visto ajustado manualmente: ${amount > 0 ? '+' : ''}${amount}`);
+            addLog("sys", `ADMIN_OVERRIDE: Visto ajustado manualmente (${amount > 0 ? '+' : ''}${amount}).`);
         };
 
-        function addLog(msg) {
+        // LOG MELHORADO E IMERSIVO
+        function addLog(type, msg) {
             const div = document.createElement('div');
-            div.className = 'log-entry';
-            div.innerHTML = `<span class="text-[#ff003c] font-bold mr-2">[DIA ${String(estado.dia).padStart(2,'0')}]</span> <span class="text-zinc-300">${msg}</span>`;
+            let icon = '⏺';
+            let classes = 'log-sys';
+            
+            if (type === 'game') { icon = '⚔️'; classes = 'log-game'; }
+            else if (type === 'loot') { icon = '📦'; classes = 'log-loot'; }
+            else if (type === 'epic') { icon = '🔫'; classes = 'log-epic'; }
+            else if (type === 'sys') { icon = '⚙️'; classes = 'log-sys'; }
+
+            // Timestamp falso simples
+            const now = new Date();
+            const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            div.className = `log-entry ${classes}`;
+            div.innerHTML = `
+                <div class="flex flex-col items-center justify-center border-r border-white/10 pr-2 mr-2">
+                    <span class="text-[9px] opacity-40 font-mono tracking-widest">TIME</span>
+                    <span class="text-xs font-mono font-bold">${time}</span>
+                </div>
+                <div class="text-2xl">${icon}</div>
+                <div class="flex-grow">
+                    <div class="text-[9px] uppercase tracking-widest opacity-50 mb-1">LOG ENTRY // DIA ${String(estado.dia).padStart(2,'0')}</div>
+                    <div class="text-xs font-bold leading-relaxed text-zinc-100">${msg}</div>
+                </div>
+            `;
             ui.log.prepend(div);
         }
 
@@ -456,35 +521,26 @@
             ui.day.innerText = String(estado.dia).padStart(2, '0');
             ui.visto.innerText = String(estado.visto).padStart(2, '0');
 
-            // Alerta de Visto
             if (estado.visto <= 1) ui.visto.classList.add('visto-pulse');
             else ui.visto.classList.remove('visto-pulse');
 
-            // Game Over Check (Visual Only)
-            const btn = document.getElementById('advance-btn');
             if (estado.visto <= 0) {
                 ui.visto.innerText = "00";
-                // Não bloqueamos totalmente caso queiram ajustar manualmente, mas avisamos
-                addLog("ALERTA CRÍTICO: Visto Expirado.");
+                addLog("sys", "CRITICAL_FAILURE: Visto expirado. Laser orbital em standby.");
             }
 
-            // Próximos Eventos
-            const d3 = 3 - (estado.dia % 3 === 0 ? 3 : estado.dia % 3);
-            const d6 = 6 - (estado.dia % 6 === 0 ? 6 : estado.dia % 6);
-            const d12 = 12 - (estado.dia % 12 === 0 ? 12 : estado.dia % 12);
-
             ui.nextEvents.innerHTML = `
-                <li class="flex justify-between items-center text-zinc-400">
+                <li class="flex justify-between items-center text-zinc-400 border-b border-zinc-800 pb-2">
                     <span>⚔️ JOGO DE CARTA</span> 
-                    <span class="text-[#ff003c] font-bold bg-[#1a0005] px-2 border border-[#33000d]">${d3 === 0 ? 'HOJE' : d3 + 'd'}</span>
+                    <span class="text-[#ff003c] font-bold px-2">SEMPRE</span>
                 </li>
-                <li class="flex justify-between items-center text-zinc-400">
+                <li class="flex justify-between items-center text-zinc-400 border-b border-zinc-800 pb-2">
                     <span>📦 LOOT COMUM</span> 
-                    <span class="text-green-500 font-bold bg-[#001a05] px-2 border border-green-900">${d6 === 0 ? 'HOJE' : d6 + 'd'}</span>
+                    <span class="text-green-500 font-bold px-2">A CADA 2 CICLOS</span>
                 </li>
                 <li class="flex justify-between items-center text-zinc-400">
                     <span>🔫 ARSENAL</span> 
-                    <span class="text-purple-500 font-bold bg-[#1a001a] px-2 border border-purple-900">${d12 === 0 ? 'HOJE' : d12 + 'd'}</span>
+                    <span class="text-purple-500 font-bold px-2">A CADA 4 CICLOS</span>
                 </li>
             `;
 
@@ -495,7 +551,7 @@
             } else {
                 ui.inventory.innerHTML = estado.inventario.map(item => `
                     <div class="flex justify-between items-center bg-black p-2 border-b border-zinc-900 group hover:bg-zinc-900 transition-colors">
-                        <span class="${RARIDADES[item.raridade]} font-bold text-[11px] uppercase group-hover:pl-1 transition-all">${item.nome}</span>
+                        <span class="${RARIDADES[item.raridade]} font-bold text-[11px] uppercase group-hover:pl-1 transition-all text-left w-2/3">${item.nome}</span>
                         <span class="text-[9px] text-zinc-600 border border-zinc-800 px-1 rounded">${item.tipo}</span>
                     </div>
                 `).join('');
@@ -511,30 +567,61 @@
             `).join('');
         }
 
-        // TIME SKIP LOGIC
-        document.getElementById('advance-btn').addEventListener('click', () => {
-            if (estado.visto <= 0 && !confirm("Visto expirado. Continuar mesmo assim?")) return;
+        // --- SISTEMA DE FILA DE EVENTOS ---
 
-            estado.dia++;
-            estado.visto--; 
+        function addToQueue(type, data) {
+            eventQueue.push({ type, data });
+        }
+
+        function processEventQueue() {
+            if (isProcessingQueue || eventQueue.length === 0) return;
             
-            // Prioridade: Jogo > Arma > Loot
-            if (estado.dia % 3 === 0) {
-                triggerGame();
-            } else if (estado.dia % 12 === 0) {
-                // Dia 12: ARMA (Substitui Loot Comum)
-                triggerLoot(ARMAS_ESPECIAIS, "ARSENAL");
-            } else if (estado.dia % 6 === 0) {
-                // Dia 6: COMUM
-                triggerLoot(ITENS_COMUNS, "LOOT COMUM");
-            } else {
-                addLog("Dia concluído. Visto -1.");
+            isProcessingQueue = true;
+            const event = eventQueue.shift(); // Pega o primeiro evento
+
+            if (event.type === 'GAME') {
+                showGameModal();
+            } else if (event.type === 'LOOT') {
+                showLootModal(event.data.lista, event.data.titulo, event.data.isEpic);
+            }
+        }
+
+        function nextEvent() {
+            isProcessingQueue = false;
+            processEventQueue(); // Chama o próximo
+        }
+
+        // --- LÓGICA DE CICLO (3 DIAS) ---
+        document.getElementById('advance-btn').addEventListener('click', () => {
+            if (estado.visto < 3 && !confirm("Visto insuficiente para 3 dias. Você vai morrer. Continuar?")) return;
+            if (isProcessingQueue) return; // Evita cliques duplos durante animação
+
+            estado.dia += 3;
+            estado.visto -= 3;
+            addLog("sys", "CYCLE_COMPLETE: 72 horas processadas com sucesso. Consumo de visto registrado (-3).");
+
+            // 1. Sempre tem Jogo
+            addToQueue('GAME', null);
+
+            // Cálculos de Ciclo (1 ciclo = 3 dias)
+            // Começa dia 1. Primeiro clique -> Dia 4 (1 ciclo completo passado)
+            // (4 - 1) / 3 = 1 ciclo
+            const ciclosPassados = (estado.dia - 1) / 3;
+
+            // 2. Arsenal: A cada 4 ciclos (Ciclo 4, 8, 12...)
+            if (ciclosPassados % 4 === 0 && ciclosPassados > 0) {
+                addToQueue('LOOT', { lista: ARMAS_ESPECIAIS, titulo: "ARSENAL DE ALTO NÍVEL", isEpic: true });
+            } 
+            // 3. Loot Comum: A cada 2 ciclos (Ciclo 2, 6, 10... mas pula múltiplos de 4 pois Arsenal tem prioridade)
+            else if (ciclosPassados % 2 === 0 && ciclosPassados > 0) {
+                addToQueue('LOOT', { lista: ITENS_COMUNS, titulo: "SUPRIMENTOS LOCALIZADOS", isEpic: false });
             }
 
             updateUI();
+            processEventQueue(); // Inicia a sequência
         });
 
-        function triggerGame() {
+        function showGameModal() {
             const valor = Math.floor(Math.random() * 5) + 1;
             const naipe = NAIPES[Math.floor(Math.random() * NAIPES.length)];
             
@@ -547,10 +634,37 @@
             window.currentReward = { valor, naipe };
         }
 
-        function triggerLoot(lista, titulo) {
+        function showLootModal(lista, titulo, isEpic) {
             const item = lista[Math.floor(Math.random() * lista.length)];
-            
-            // Setup Modal Loot
+            itemLootAtual = item;
+
+            const box = document.getElementById('loot-box-container');
+            const badge = document.getElementById('loot-header-badge');
+            const btn = document.getElementById('btn-claim-loot');
+            const content = document.getElementById('loot-content');
+            const unknownIcon = document.getElementById('loot-unknown-icon');
+
+            // Reset Animation State (Closed)
+            content.classList.add('loot-hidden-content');
+            unknownIcon.classList.remove('hidden');
+            btn.innerText = "ABRIR";
+            btn.dataset.state = "open"; // Estado inicial do botão é 'para abrir'
+            box.classList.remove('shake-box');
+
+            if (isEpic) {
+                box.classList.add('loot-box-epic');
+                box.classList.remove('loot-box');
+                badge.className = "absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-purple-500 uppercase tracking-[0.2em] border border-purple-500";
+                badge.innerText = "ARSENAL";
+                btn.className = "w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2";
+            } else {
+                box.classList.add('loot-box');
+                box.classList.remove('loot-box-epic');
+                badge.className = "absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-green-500 uppercase tracking-[0.2em] border border-green-500";
+                badge.innerText = "SUPRIMENTO";
+                btn.className = "w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2";
+            }
+
             document.getElementById('loot-title').innerText = titulo;
             document.getElementById('loot-name-display').innerText = item.nome;
             document.getElementById('loot-type-display').innerText = item.tipo;
@@ -560,32 +674,55 @@
             rarityEl.className = `text-xs font-bold uppercase tracking-[0.3em] mb-2 ${RARIDADES[item.raridade]}`;
 
             ui.lootModal.classList.remove('hidden');
-            window.tempLoot = item;
         }
 
-        // --- CORREÇÃO DO LOOT ---
-        // Adicionado EventListener em vez de onclick inline para garantir escopo
-        document.getElementById('btn-claim-loot').addEventListener('click', () => {
-            if (window.tempLoot) {
-                estado.inventario.push(window.tempLoot);
-                addLog(`Encontrado: ${window.tempLoot.nome}`);
-                window.tempLoot = null;
+        // LISTENERS DE FECHAMENTO E ANIMAÇÃO
+        document.getElementById('btn-claim-loot').addEventListener('click', function(e) {
+            const btn = e.target;
+            const box = document.getElementById('loot-box-container');
+            const content = document.getElementById('loot-content');
+            const unknownIcon = document.getElementById('loot-unknown-icon');
+
+            // Passo 1: Abrir
+            if (btn.dataset.state === "open") {
+                // Animação
+                box.classList.add('shake-box');
+                
+                // Delay para revelar
+                setTimeout(() => {
+                    unknownIcon.classList.add('hidden');
+                    content.classList.remove('loot-hidden-content');
+                    content.classList.add('reveal-flash');
+                    
+                    btn.innerText = "PEGAR ITEM";
+                    btn.dataset.state = "claim"; // Muda estado para 'pegar'
+                }, 500);
+            } 
+            // Passo 2: Pegar e Fechar
+            else if (btn.dataset.state === "claim") {
+                if (itemLootAtual) {
+                    estado.inventario.push(itemLootAtual);
+                    const type = ARMAS_ESPECIAIS.includes(itemLootAtual) ? 'epic' : 'loot';
+                    addLog(type, `ITEM_ACQUIRED: [${itemLootAtual.nome}] transferido para o inventário.`);
+                    itemLootAtual = null;
+                    ui.lootModal.classList.add('hidden');
+                    updateUI();
+                    nextEvent(); // Chama o próximo evento da fila
+                }
             }
-            ui.lootModal.classList.add('hidden');
-            updateUI();
         });
 
-        document.getElementById('close-modal').addEventListener('click', () => {
+        document.getElementById('close-game-modal').addEventListener('click', () => {
             if (window.currentReward) {
                 estado.cartas.push(window.currentReward);
-                addLog(`VENCIDO: ${window.currentReward.valor} de ${window.currentReward.naipe.nome} (Visto não alterado)`);
+                addLog('game', `GAME_CLEAR: Dificuldade [${window.currentReward.valor}] superada. Naipe [${window.currentReward.naipe.nome}] registrado.`);
                 window.currentReward = null;
             }
             ui.gameModal.classList.add('hidden');
             updateUI();
+            nextEvent(); // Chama o próximo evento da fila
         });
 
-        // Utils
         window.exportarImagem = () => {
             html2canvas(document.getElementById('capture-area'), {
                 backgroundColor: '#050505',
