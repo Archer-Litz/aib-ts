@@ -1,742 +1,378 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Borderland OS v2.5 (Immersive Update)</title>
+    <title>Jogo do Impostor - por Daniel Ruas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-red: #ff003c;
-            --neon-dim: #5a0015;
-            --bg-color: #050505;
-            --grid-color: #1a1a1a;
-            --text-main: #e0e0e0;
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
         body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            background-image: 
-                linear-gradient(var(--grid-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 20px 20px;
-            overflow-x: hidden;
+            font-family: 'Outfit', sans-serif;
+            background-color: #111827; /* cinza muito escuro */
+            color: #f3f4f6;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Efeito CRT / Scanlines */
-        .crt::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .hud-border {
-            border: 1px solid var(--neon-red);
-            box-shadow: 0 0 10px var(--neon-dim), inset 0 0 20px rgba(255, 0, 60, 0.1);
-            position: relative;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .hud-border::after {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px;
-            width: 10px; height: 10px;
-            border-top: 2px solid var(--neon-red);
-            border-left: 2px solid var(--neon-red);
-        }
-        .hud-border::before {
-            content: '';
-            position: absolute;
-            bottom: -2px; right: -2px;
-            width: 10px; height: 10px;
-            border-bottom: 2px solid var(--neon-red);
-            border-right: 2px solid var(--neon-red);
-        }
-
-        /* Loot Box Style & Animation */
-        .loot-box {
-            border: 4px solid #4ade80;
-            background: radial-gradient(circle, #064e3b 0%, #000000 100%);
-            box-shadow: 0 0 20px #4ade80;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: all 0.5s;
-        }
-        .loot-box-epic {
-            border-color: #d946ef;
-            box-shadow: 0 0 25px #d946ef;
-            background: radial-gradient(circle, #4a044e 0%, #000000 100%);
-        }
-
-        /* Estado Fechado/Oculto */
-        .loot-hidden-content {
-            filter: blur(15px);
-            opacity: 0.2;
-            transform: scale(0.9);
-            transition: all 0.5s;
+        .cyber-border {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
         }
         
-        /* Animação de Abrir */
-        .shake-box {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        .impostor-border {
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
         }
-
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(1deg); }
-            20%, 80% { transform: translate3d(2px, 0, 0) rotate(-1deg); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(2deg); }
-            40%, 60% { transform: translate3d(4px, 0, 0) rotate(-2deg); }
-        }
-
-        .reveal-flash {
-            animation: flash 0.5s ease-out;
-        }
-        @keyframes flash {
-            0% { background-color: white; }
-            100% { background-color: transparent; }
-        }
-
-        .btn-action {
-            background: linear-gradient(45deg, #2b000a 0%, #000 100%);
-            border: 1px solid var(--neon-red);
-            color: var(--neon-red);
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .btn-action:hover:not(:disabled) {
-            background: var(--neon-red);
-            color: black;
-            box-shadow: 0 0 20px var(--neon-red);
-        }
-        .btn-action:disabled {
-            border-color: #333;
-            color: #333;
-            background: #111;
-            cursor: not-allowed;
-        }
-
-        /* Novos Estilos de Log */
-        .log-entry {
-            border-left: 3px solid #333;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            background: rgba(0,0,0,0.6);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: slideIn 0.3s ease-out;
-            line-height: 1.4;
-        }
-        .log-sys { border-color: #555; color: #aaa; }
-        .log-game { border-color: #ff003c; background: linear-gradient(90deg, rgba(255,0,60,0.1), transparent); color: #ff99ac; }
-        .log-loot { border-color: #4ade80; background: linear-gradient(90deg, rgba(74,222,128,0.1), transparent); color: #bbf7d0; }
-        .log-epic { border-color: #d946ef; background: linear-gradient(90deg, rgba(217,70,239,0.1), transparent); color: #f5d0fe; }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Raridades */
-        .rarity-common { color: #a1a1aa; text-shadow: 0 0 2px rgba(161, 161, 170, 0.5); }
-        .rarity-uncommon { color: #4ade80; text-shadow: 0 0 5px rgba(74, 222, 128, 0.5); }
-        .rarity-rare { color: #3b82f6; text-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
-        .rarity-epic { color: #d946ef; text-shadow: 0 0 8px rgba(217, 70, 239, 0.6); }
-        .rarity-legendary { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.8); }
-
-        .visto-pulse { animation: pulseAlert 1.5s infinite; color: #ff003c; }
-        @keyframes pulseAlert { 
-            0% { text-shadow: 0 0 5px #ff003c; opacity: 1; } 
-            50% { text-shadow: 0 0 20px #ff003c; opacity: 0.5; } 
-            100% { text-shadow: 0 0 5px #ff003c; opacity: 1; } 
-        }
-
-        .control-btn { opacity: 0; transition: opacity 0.2s; }
-        .visto-container:hover .control-btn { opacity: 1; }
-
-        ::-webkit-scrollbar { width: 6px; background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-red); border-radius: 2px; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-2 lg:p-6 crt">
+<body class="min-h-screen flex flex-col justify-center">
 
-    <!-- SETUP MODAL -->
-    <div id="setup-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-        <div class="hud-border bg-black p-8 max-w-md w-full relative">
-            <h1 class="text-3xl font-bold text-[#ff003c] mb-2 tracking-tighter uppercase text-center glitch">BORDERLAND OS</h1>
-            <p class="text-xs text-center opacity-60 mb-8 tracking-[0.2em]">INICIALIZAÇÃO DE SISTEMA</p>
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-xs uppercase font-bold mb-2 text-zinc-500 tracking-widest">DIAS DE VISTO ATUAIS</label>
-                    <input type="number" id="input-visto" value="3" class="w-full bg-black border border-[#ff003c] p-4 text-3xl font-bold text-[#ff003c] focus:outline-none focus:bg-[#1a0005] text-center">
-                </div>
-            </div>
-
-            <button id="start-btn" class="w-full mt-8 btn-action py-4 font-bold text-xl tracking-widest">
-                INICIAR SESSÃO
-            </button>
-        </div>
-    </div>
-
-    <!-- MAIN INTERFACE -->
-    <div id="capture-area" class="w-full max-w-6xl bg-black/80 backdrop-blur-sm p-4 lg:p-8 hud-border relative min-h-[80vh]">
-        
-        <!-- Top Bar -->
-        <div class="flex flex-col md:flex-row justify-between items-start border-b border-[#33000d] pb-6 mb-6 gap-6">
-            <div>
-                <h2 class="text-4xl font-bold text-[#ff003c] tracking-tighter" style="text-shadow: 0 0 10px #ff003c;">STATUS: ATIVO</h2>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="exportarImagem()" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 uppercase tracking-widest">Salvar IMG</button>
-                    <button onclick="mostrarAjuda()" class="text-[10px] bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 px-3 py-1 uppercase tracking-widest">Lista de Loot</button>
-                </div>
-            </div>
-
-            <div class="flex gap-4">
-                <div class="bg-black border border-zinc-800 p-4 min-w-[120px] text-center">
-                    <div class="text-[10px] text-zinc-500 uppercase tracking-[0.2em]">DIA</div>
-                    <div class="text-4xl font-bold text-white" id="day-counter">01</div>
-                </div>
-                <!-- Visto Counter -->
-                <div class="bg-black border border-[#ff003c] p-4 min-w-[120px] text-center shadow-[0_0_15px_rgba(255,0,60,0.2)] relative visto-container">
-                    <div class="text-[10px] text-[#ff003c] uppercase tracking-[0.2em]">VISTO</div>
-                    <div class="text-4xl font-bold text-[#ff003c]" id="visto-counter">03</div>
-                    
-                    <div class="absolute -bottom-3 left-0 w-full flex justify-center gap-1 control-btn">
-                        <button onclick="adjustVisto(-1)" class="text-[10px] font-bold bg-zinc-900 border border-[#ff003c] text-[#ff003c] w-6 h-4 flex items-center justify-center hover:bg-[#ff003c] hover:text-black">-</button>
-                        <button onclick="adjustVisto(1)" class="text-[10px] font-bold bg-zinc-900 border border-[#ff003c] text-[#ff003c] w-6 h-4 flex items-center justify-center hover:bg-[#ff003c] hover:text-black">+</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- LEFT COLUMN: Actions & Events -->
-            <div class="lg:col-span-4 space-y-6">
-                <!-- Main Action -->
-                <button id="advance-btn" class="w-full btn-action py-8 text-2xl font-bold shadow-lg relative overflow-hidden group">
-                    <span class="relative z-10">AVANÇAR CICLO (3 DIAS)</span>
-                    <div class="absolute inset-0 bg-[#ff003c] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 opacity-20"></div>
-                    <div class="text-[10px] mt-2 opacity-70 tracking-widest relative z-10">CONSUMIR 3 VISTOS & GERAR JOGO</div>
-                </button>
-
-                <!-- Next Events -->
-                <div class="bg-black/50 border border-zinc-800 p-4">
-                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 border-b border-[#33000d] pb-2">Próximos Eventos</h3>
-                    <ul class="space-y-3 text-sm" id="next-events">
-                        <!-- JS Generated -->
-                    </ul>
-                </div>
-
-                <!-- Inventory -->
-                <div class="bg-black/50 border border-zinc-800 p-4 flex-grow flex flex-col h-[400px]">
-                    <div class="flex justify-between items-center mb-4 border-b border-[#33000d] pb-2">
-                        <h3 class="text-xs text-zinc-400 uppercase tracking-[0.3em]">Mochila</h3>
-                        <span class="text-[9px] text-zinc-600" id="item-count">0 ITENS</span>
-                    </div>
-                    <div id="inventory-list" class="overflow-y-auto space-y-1 pr-2 flex-grow">
-                        <span class="opacity-30 italic text-xs">Vazio...</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN: Logs & Cards -->
-            <div class="lg:col-span-8 space-y-6">
-                
-                <!-- Log System -->
-                <div class="bg-black border border-zinc-800 p-4 h-[300px] flex flex-col relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-2 opacity-20 text-[#ff003c] text-6xl font-bold select-none">SYSTEM LOG</div>
-                    <h3 class="text-xs text-[#ff003c] uppercase tracking-[0.3em] mb-4 z-10">Histórico de Operações</h3>
-                    
-                    <div id="log-container" class="flex-grow overflow-y-auto pr-2 font-mono text-sm z-10">
-                        <!-- Logs here -->
-                    </div>
-                </div>
-
-                <!-- Cards Collection -->
-                <div class="bg-black/50 border border-zinc-800 p-6">
-                    <h3 class="text-xs text-zinc-400 uppercase tracking-[0.3em] mb-4">Cartas de Visto Coletadas</h3>
-                    <div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="cards-grid">
-                        <!-- Cards JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALS -->
-    
-    <!-- GAME MODAL -->
-    <div id="game-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-        <div class="hud-border bg-zinc-900 p-8 max-w-md w-full text-center">
-            <h2 class="text-4xl font-bold text-[#ff003c] mb-2 tracking-tighter">FIM DE CICLO</h2>
-            <div class="w-full h-[1px] bg-[#ff003c] mb-6"></div>
-            
-            <p class="text-xs text-zinc-500 mb-4 uppercase tracking-widest">Você sobreviveu a 3 dias. Jogo encontrado:</p>
-
-            <div class="bg-black border border-[#ff003c] p-10 mb-8 inline-block shadow-[0_0_30px_rgba(255,0,60,0.15)]">
-                <div class="text-8xl font-bold text-white mb-2" id="modal-card-val">?</div>
-                <div class="text-3xl font-bold" id="modal-card-suit">NAIPE</div>
-            </div>
-
-            <p class="text-sm opacity-70 mb-8">Narre sua sobrevivência. A carta será adicionada ao registro.</p>
-            <button id="close-game-modal" class="btn-action w-full py-4 font-bold">REGISTRAR VITÓRIA</button>
-        </div>
-    </div>
-
-    <!-- LOOT MODAL (CAIXINHA) -->
-    <div id="loot-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4">
-        <div class="loot-box p-8 max-w-sm w-full text-center relative" id="loot-box-container">
-            <!-- Box Lid / Visuals -->
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-green-500 uppercase tracking-[0.2em] border border-green-500" id="loot-header-badge">SUPRIMENTO</div>
-
-            <h2 class="text-2xl font-bold text-white mb-6 mt-4 tracking-tighter drop-shadow-md" id="loot-title">CAIXA ENCONTRADA</h2>
-            
-            <!-- Conteúdo Oculto (Animado) -->
-            <div id="loot-content" class="py-4 border-t border-b border-white/20 my-4 bg-black/40 loot-hidden-content">
-                <div id="loot-rarity-display" class="text-xs font-bold uppercase tracking-[0.3em] mb-2">RARIDADE</div>
-                <div id="loot-name-display" class="text-2xl font-bold text-white mb-2 break-words">NOME DO ITEM</div>
-                <div id="loot-type-display" class="text-[10px] opacity-70 uppercase bg-black/80 inline-block px-2 py-1 rounded border border-white/20">TIPO</div>
-            </div>
-
-            <div class="h-8 flex justify-center items-center mb-2">
-                 <div id="loot-unknown-icon" class="text-4xl opacity-50">🔒</div>
-            </div>
-
-            <button id="btn-claim-loot" data-state="open" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2">
-                ABRIR
-            </button>
-        </div>
-    </div>
-
-    <!-- LISTA DE ITENS MODAL -->
-    <div id="help-modal" class="hidden fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
-        <div class="hud-border bg-black p-6 max-w-4xl w-full h-[85vh] flex flex-col" onclick="event.stopPropagation()">
-            <h2 class="text-xl text-[#ff003c] font-bold uppercase tracking-widest mb-6 border-b border-zinc-800 pb-2">Banco de Dados de Itens</h2>
-            <div class="overflow-y-auto flex-grow pr-4 space-y-8">
-                
-                <div>
-                    <h3 class="text-white font-bold mb-3 uppercase tracking-widest border-l-4 border-zinc-500 pl-2">📦 Loot Comum (A cada 2 Ciclos)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs" id="common-loot-table"></div>
-                </div>
-
-                <div>
-                    <h3 class="text-purple-400 font-bold mb-3 uppercase tracking-widest border-l-4 border-purple-500 pl-2">🔫 Arsenal Especial (A cada 4 Ciclos)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs" id="special-loot-table"></div>
-                </div>
-
-            </div>
-            <button onclick="document.getElementById('help-modal').classList.add('hidden')" class="mt-4 btn-action w-full py-3 font-bold text-xs">FECHAR</button>
-        </div>
-    </div>
+    <main id="app" class="w-full max-w-sm mx-auto p-5 fade-in">
+        <!-- Conteúdo gerado via JS -->
+    </main>
 
     <script>
-        const NAIPES = [
-            { nome: 'ESPADAS', icon: '♠️', cor: 'text-zinc-400' },
-            { nome: 'PAUS', icon: '♣️', cor: 'text-green-500' },
-            { nome: 'OUROS', icon: '♦️', cor: 'text-red-500' },
-            { nome: 'COPAS', icon: '♥️', cor: 'text-red-600' }
-        ];
-
-        const RARIDADES = {
-            "Comum": "rarity-common",
-            "Incomum": "rarity-uncommon",
-            "Raro": "rarity-rare",
-            "Épico": "rarity-epic",
-            "Lendário": "rarity-legendary"
+        // --- ESTADO DO JOGO ---
+        let state = {
+            mestre: "",
+            palavraSecreta: "",
+            jogadores: [],
+            dadosJogo: [], // Array com { nome, isImpostor }
+            jogadorAtualIndex: 0,
+            ecra: 'mestre' // 'mestre', 'setup_jogadores', 'passar', 'revelar', 'jogo', 'fim'
         };
 
-        const ITENS_COMUNS = [
-            { nome: "Taco de Beisebol (Madeira)", tipo: "Arma Branca", raridade: "Incomum" },
-            { nome: "Taco de Beisebol (Alumínio)", tipo: "Arma Branca", raridade: "Raro" },
-            { nome: "Pé de Cabra", tipo: "Ferramenta/Arma", raridade: "Incomum" },
-            { nome: "Faca de Caça", tipo: "Arma Branca", raridade: "Raro" },
-            { nome: "Canivete Suíço", tipo: "Ferramenta", raridade: "Comum" },
-            { nome: "Spray de Pimenta", tipo: "Defesa", raridade: "Incomum" },
-            { nome: "Taser de Contato (Carga Baixa)", tipo: "Arma Especial", raridade: "Raro" },
-            { nome: "Martelo de Obra", tipo: "Ferramenta/Arma", raridade: "Comum" },
-            { nome: "Chave Inglesa Pesada", tipo: "Ferramenta/Arma", raridade: "Comum" },
-            { nome: "Soco Inglês", tipo: "Arma Branca", raridade: "Incomum" },
-            { nome: "Cassetete Retrátil", tipo: "Arma Branca", raridade: "Raro" },
-            { nome: "Corrente de Aço (50cm)", tipo: "Arma Branca", raridade: "Comum" },
-            { nome: "Munição 9mm (x3 balas)", tipo: "Munição", raridade: "Incomum" },
-            { nome: "Munição 9mm (Caixa c/ 10)", tipo: "Munição", raridade: "Raro" },
-            { nome: "Munição .38 (x2 balas)", tipo: "Munição", raridade: "Incomum" },
-            { nome: "Munição .38 (x6 balas)", tipo: "Munição", raridade: "Raro" },
-            { nome: "Cartucho Calibre 12 (x2)", tipo: "Munição", raridade: "Raro" },
-            { nome: "Flechas de Carbono (x3)", tipo: "Munição", raridade: "Raro" },
-            { nome: "Virotes de Besta (x3)", tipo: "Munição", raridade: "Raro" },
-            { nome: "Kit de Primeiros Socorros", tipo: "Medicina", raridade: "Raro" },
-            { nome: "Bandagens Estéreis", tipo: "Medicina", raridade: "Comum" },
-            { nome: "Álcool 70% (Garrafa)", tipo: "Medicina/Combustível", raridade: "Comum" },
-            { nome: "Analgésicos Fortes", tipo: "Medicina", raridade: "Incomum" },
-            { nome: "Gaze e Esparadrapo", tipo: "Medicina", raridade: "Comum" },
-            { nome: "Adrenalina Injetável", tipo: "Medicina", raridade: "Épico" },
-            { nome: "Antibióticos (Cartela)", tipo: "Medicina", raridade: "Raro" },
-            { nome: "Lanterna Tática", tipo: "Ferramenta", raridade: "Incomum" },
-            { nome: "Pilha AA (Pacote x4)", tipo: "Recurso", raridade: "Comum" },
-            { nome: "Isqueiro Zippo (Cheio)", tipo: "Ferramenta", raridade: "Incomum" },
-            { nome: "Corda de Escalada (10m)", tipo: "Ferramenta", raridade: "Incomum" },
-            { nome: "Fita Silver Tape", tipo: "Ferramenta", raridade: "Comum" },
-            { nome: "Binóculos", tipo: "Ferramenta", raridade: "Raro" },
-            { nome: "Powerbank (Carga Média)", tipo: "Eletrônico", raridade: "Incomum" },
-            { nome: "Walkie-Talkie (Sem Bateria)", tipo: "Eletrônico", raridade: "Incomum" },
-            { nome: "Máscara de Gás (Filtro Velho)", tipo: "Proteção", raridade: "Raro" },
-            { nome: "Mochila Militar (Pequena)", tipo: "Utilitário", raridade: "Raro" },
-            { nome: "Sinalizador (Flare)", tipo: "Consumível", raridade: "Incomum" },
-            { nome: "Pregos (Caixa Pequena)", tipo: "Crafting", raridade: "Comum" },
-            { nome: "Arame Farpado (Rolo)", tipo: "Crafting", raridade: "Incomum" },
-            { nome: "Cola Super Forte", tipo: "Crafting", raridade: "Comum" },
-            { nome: "Óleo Lubrificante", tipo: "Manutenção", raridade: "Comum" },
-            { nome: "Garrafa de Água (1.5L)", tipo: "Consumível", raridade: "Comum" },
-            { nome: "Ração Militar (MRE)", tipo: "Consumível", raridade: "Incomum" },
-            { nome: "Barra de Proteína", tipo: "Consumível", raridade: "Comum" },
-            { nome: "Lata de Atum", tipo: "Consumível", raridade: "Comum" },
-            { nome: "Biscoito de Arroz", tipo: "Consumível", raridade: "Comum" },
-            { nome: "Maço de Cigarros", tipo: "Moeda de Troca", raridade: "Comum" },
-            { nome: "Relógio Digital Simples", tipo: "Utilitário", raridade: "Comum" },
-            { nome: "Garrafa de Vodka Barata", tipo: "Consumível", raridade: "Incomum" },
-            { nome: "Baralho de Cartas", tipo: "Lazer", raridade: "Comum" }
-        ];
+        const appElement = document.getElementById('app');
 
-        const ARMAS_ESPECIAIS = [
-            { nome: "Pistola Glock 17 [VAZIA]", tipo: "Arma de Fogo", raridade: "Épico" },
-            { nome: "Revólver .38 [VAZIO]", tipo: "Arma de Fogo", raridade: "Raro" },
-            { nome: "Escopeta Serrada [VAZIA]", tipo: "Arma de Fogo", raridade: "Lendário" },
-            { nome: "Rifle de Caça [VAZIO]", tipo: "Arma de Fogo", raridade: "Lendário" },
-            { nome: "Katana Tradicional", tipo: "Arma Branca", raridade: "Épico" },
-            { nome: "Machado de Bombeiro", tipo: "Arma Branca", raridade: "Raro" },
-            { nome: "Facão de Mato (Machete)", tipo: "Arma Branca", raridade: "Incomum" },
-            { nome: "Arco Composto [SEM FLECHAS]", tipo: "Arma Distância", raridade: "Épico" },
-            { nome: "Besta de Mão [SEM VIROTES]", tipo: "Arma Distância", raridade: "Raro" },
-            { nome: "Colete à Prova de Balas (Leve)", tipo: "Proteção", raridade: "Épico" },
-            { nome: "Taser Policial (Carga Cheia)", tipo: "Arma Especial", raridade: "Raro" }
-        ];
+        // --- FUNÇÕES DE RENDERIZAÇÃO ---
+        function render() {
+            appElement.innerHTML = '';
+            appElement.className = "w-full max-w-sm mx-auto p-5 fade-in"; 
 
-        // Estado Global
-        let estado = {
-            dia: 1,
-            visto: 3,
-            inventario: [],
-            cartas: []
-        };
-        
-        // Fila de Eventos (Event Queue)
-        // Estrutura: { type: 'GAME' | 'LOOT' | 'ARSENAL', data: any }
-        let eventQueue = [];
-        let isProcessingQueue = false;
-        
-        let itemLootAtual = null;
+            switch (state.ecra) {
+                case 'mestre': renderMestreScreen(); break;
+                case 'setup_jogadores': renderSetupJogadoresScreen(); break;
+                case 'passar': renderPassarScreen(); break;
+                case 'revelar': renderRevelarScreen(); break;
+                case 'jogo': renderJogoScreen(); break;
+                case 'fim': renderFimScreen(); break;
+            }
+        }
 
-        const ui = {
-            day: document.getElementById('day-counter'),
-            visto: document.getElementById('visto-counter'),
-            log: document.getElementById('log-container'),
-            nextEvents: document.getElementById('next-events'),
-            inventory: document.getElementById('inventory-list'),
-            cards: document.getElementById('cards-grid'),
-            itemCount: document.getElementById('item-count'),
-            setupModal: document.getElementById('setup-modal'),
-            gameModal: document.getElementById('game-modal'),
-            lootModal: document.getElementById('loot-modal'),
-            helpModal: document.getElementById('help-modal')
-        };
-
-        // INICIALIZAÇÃO
-        document.getElementById('start-btn').addEventListener('click', () => {
-            const inputVisto = parseInt(document.getElementById('input-visto').value);
-            estado.visto = isNaN(inputVisto) ? 3 : inputVisto;
-            estado.dia = 1; 
-            
-            ui.setupModal.classList.add('hidden');
-            updateUI();
-            addLog("sys", "SYSTEM_BOOT: Protocolos de fronteira ativos.");
-            addLog("sys", "VITALS_CHECK: Sinais de vida confirmados.");
-            renderHelpTable();
-        });
-
-        window.adjustVisto = (amount) => {
-            estado.visto += amount;
-            updateUI();
-            addLog("sys", `ADMIN_OVERRIDE: Visto ajustado manualmente (${amount > 0 ? '+' : ''}${amount}).`);
-        };
-
-        // LOG MELHORADO E IMERSIVO
-        function addLog(type, msg) {
-            const div = document.createElement('div');
-            let icon = '⏺';
-            let classes = 'log-sys';
-            
-            if (type === 'game') { icon = '⚔️'; classes = 'log-game'; }
-            else if (type === 'loot') { icon = '📦'; classes = 'log-loot'; }
-            else if (type === 'epic') { icon = '🔫'; classes = 'log-epic'; }
-            else if (type === 'sys') { icon = '⚙️'; classes = 'log-sys'; }
-
-            // Timestamp falso simples
-            const now = new Date();
-            const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-
-            div.className = `log-entry ${classes}`;
-            div.innerHTML = `
-                <div class="flex flex-col items-center justify-center border-r border-white/10 pr-2 mr-2">
-                    <span class="text-[9px] opacity-40 font-mono tracking-widest">TIME</span>
-                    <span class="text-xs font-mono font-bold">${time}</span>
+        // ECRA 1: DEFINIR MESTRE E PALAVRA
+        function renderMestreScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-1">IMPOSTOR</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">por Daniel Ruas</p>
                 </div>
-                <div class="text-2xl">${icon}</div>
-                <div class="flex-grow">
-                    <div class="text-[9px] uppercase tracking-widest opacity-50 mb-1">LOG ENTRY // DIA ${String(estado.dia).padStart(2,'0')}</div>
-                    <div class="text-xs font-bold leading-relaxed text-zinc-100">${msg}</div>
-                </div>
-            `;
-            ui.log.prepend(div);
-        }
-
-        function renderHelpTable() {
-            const renderRow = (item) => `
-                <div class="flex justify-between items-center bg-zinc-900/50 p-2 border border-zinc-800 hover:border-zinc-600 transition-colors">
-                    <span class="${RARIDADES[item.raridade]} font-bold text-[10px] uppercase">${item.nome}</span>
-                </div>
-            `;
-            document.getElementById('common-loot-table').innerHTML = ITENS_COMUNS.map(renderRow).join('');
-            document.getElementById('special-loot-table').innerHTML = ARMAS_ESPECIAIS.map(renderRow).join('');
-        }
-
-        function updateUI() {
-            ui.day.innerText = String(estado.dia).padStart(2, '0');
-            ui.visto.innerText = String(estado.visto).padStart(2, '0');
-
-            if (estado.visto <= 1) ui.visto.classList.add('visto-pulse');
-            else ui.visto.classList.remove('visto-pulse');
-
-            if (estado.visto <= 0) {
-                ui.visto.innerText = "00";
-                addLog("sys", "CRITICAL_FAILURE: Visto expirado. Laser orbital em standby.");
-            }
-
-            ui.nextEvents.innerHTML = `
-                <li class="flex justify-between items-center text-zinc-400 border-b border-zinc-800 pb-2">
-                    <span>⚔️ JOGO DE CARTA</span> 
-                    <span class="text-[#ff003c] font-bold px-2">SEMPRE</span>
-                </li>
-                <li class="flex justify-between items-center text-zinc-400 border-b border-zinc-800 pb-2">
-                    <span>📦 LOOT COMUM</span> 
-                    <span class="text-green-500 font-bold px-2">A CADA 2 CICLOS</span>
-                </li>
-                <li class="flex justify-between items-center text-zinc-400">
-                    <span>🔫 ARSENAL</span> 
-                    <span class="text-purple-500 font-bold px-2">A CADA 4 CICLOS</span>
-                </li>
-            `;
-
-            // Inventário
-            ui.itemCount.innerText = `${estado.inventario.length} ITENS`;
-            if (estado.inventario.length === 0) {
-                ui.inventory.innerHTML = `<span class="opacity-30 italic text-xs p-2">Mochila vazia...</span>`;
-            } else {
-                ui.inventory.innerHTML = estado.inventario.map(item => `
-                    <div class="flex justify-between items-center bg-black p-2 border-b border-zinc-900 group hover:bg-zinc-900 transition-colors">
-                        <span class="${RARIDADES[item.raridade]} font-bold text-[11px] uppercase group-hover:pl-1 transition-all text-left w-2/3">${item.nome}</span>
-                        <span class="text-[9px] text-zinc-600 border border-zinc-800 px-1 rounded">${item.tipo}</span>
-                    </div>
-                `).join('');
-            }
-
-            // Cartas
-            ui.cards.innerHTML = estado.cartas.map(c => `
-                <div class="aspect-[2/3] flex flex-col items-center justify-center bg-zinc-900 border border-zinc-700 relative overflow-hidden group hover:border-[#ff003c] transition-colors">
-                    <span class="text-sm font-bold leading-none ${c.naipe.cor} z-10">${c.valor}</span>
-                    <span class="text-xs ${c.naipe.cor} z-10">${c.naipe.icon}</span>
-                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                </div>
-            `).join('');
-        }
-
-        // --- SISTEMA DE FILA DE EVENTOS ---
-
-        function addToQueue(type, data) {
-            eventQueue.push({ type, data });
-        }
-
-        function processEventQueue() {
-            if (isProcessingQueue || eventQueue.length === 0) return;
-            
-            isProcessingQueue = true;
-            const event = eventQueue.shift(); // Pega o primeiro evento
-
-            if (event.type === 'GAME') {
-                showGameModal();
-            } else if (event.type === 'LOOT') {
-                showLootModal(event.data.lista, event.data.titulo, event.data.isEpic);
-            }
-        }
-
-        function nextEvent() {
-            isProcessingQueue = false;
-            processEventQueue(); // Chama o próximo
-        }
-
-        // --- LÓGICA DE CICLO (3 DIAS) ---
-        document.getElementById('advance-btn').addEventListener('click', () => {
-            if (estado.visto < 3 && !confirm("Visto insuficiente para 3 dias. Você vai morrer. Continuar?")) return;
-            if (isProcessingQueue) return; // Evita cliques duplos durante animação
-
-            estado.dia += 3;
-            estado.visto -= 3;
-            addLog("sys", "CYCLE_COMPLETE: 72 horas processadas com sucesso. Consumo de visto registrado (-3).");
-
-            // 1. Sempre tem Jogo
-            addToQueue('GAME', null);
-
-            // Cálculos de Ciclo (1 ciclo = 3 dias)
-            // Começa dia 1. Primeiro clique -> Dia 4 (1 ciclo completo passado)
-            // (4 - 1) / 3 = 1 ciclo
-            const ciclosPassados = (estado.dia - 1) / 3;
-
-            // 2. Arsenal: A cada 4 ciclos (Ciclo 4, 8, 12...)
-            if (ciclosPassados % 4 === 0 && ciclosPassados > 0) {
-                addToQueue('LOOT', { lista: ARMAS_ESPECIAIS, titulo: "ARSENAL DE ALTO NÍVEL", isEpic: true });
-            } 
-            // 3. Loot Comum: A cada 2 ciclos (Ciclo 2, 6, 10... mas pula múltiplos de 4 pois Arsenal tem prioridade)
-            else if (ciclosPassados % 2 === 0 && ciclosPassados > 0) {
-                addToQueue('LOOT', { lista: ITENS_COMUNS, titulo: "SUPRIMENTOS LOCALIZADOS", isEpic: false });
-            }
-
-            updateUI();
-            processEventQueue(); // Inicia a sequência
-        });
-
-        function showGameModal() {
-            const valor = Math.floor(Math.random() * 5) + 1;
-            const naipe = NAIPES[Math.floor(Math.random() * NAIPES.length)];
-            
-            document.getElementById('modal-card-val').innerText = valor;
-            const suitEl = document.getElementById('modal-card-suit');
-            suitEl.innerText = `${naipe.icon} ${naipe.nome}`;
-            suitEl.className = `text-3xl font-bold ${naipe.cor}`;
-            
-            ui.gameModal.classList.remove('hidden');
-            window.currentReward = { valor, naipe };
-        }
-
-        function showLootModal(lista, titulo, isEpic) {
-            const item = lista[Math.floor(Math.random() * lista.length)];
-            itemLootAtual = item;
-
-            const box = document.getElementById('loot-box-container');
-            const badge = document.getElementById('loot-header-badge');
-            const btn = document.getElementById('btn-claim-loot');
-            const content = document.getElementById('loot-content');
-            const unknownIcon = document.getElementById('loot-unknown-icon');
-
-            // Reset Animation State (Closed)
-            content.classList.add('loot-hidden-content');
-            unknownIcon.classList.remove('hidden');
-            btn.innerText = "ABRIR";
-            btn.dataset.state = "open"; // Estado inicial do botão é 'para abrir'
-            box.classList.remove('shake-box');
-
-            if (isEpic) {
-                box.classList.add('loot-box-epic');
-                box.classList.remove('loot-box');
-                badge.className = "absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-purple-500 uppercase tracking-[0.2em] border border-purple-500";
-                badge.innerText = "ARSENAL";
-                btn.className = "w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2";
-            } else {
-                box.classList.add('loot-box');
-                box.classList.remove('loot-box-epic');
-                badge.className = "absolute -top-3 left-1/2 transform -translate-x-1/2 bg-black px-4 text-xs font-bold text-green-500 uppercase tracking-[0.2em] border border-green-500";
-                badge.innerText = "SUPRIMENTO";
-                btn.className = "w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 uppercase tracking-widest shadow-lg transition-all mt-2";
-            }
-
-            document.getElementById('loot-title').innerText = titulo;
-            document.getElementById('loot-name-display').innerText = item.nome;
-            document.getElementById('loot-type-display').innerText = item.tipo;
-            
-            const rarityEl = document.getElementById('loot-rarity-display');
-            rarityEl.innerText = item.raridade;
-            rarityEl.className = `text-xs font-bold uppercase tracking-[0.3em] mb-2 ${RARIDADES[item.raridade]}`;
-
-            ui.lootModal.classList.remove('hidden');
-        }
-
-        // LISTENERS DE FECHAMENTO E ANIMAÇÃO
-        document.getElementById('btn-claim-loot').addEventListener('click', function(e) {
-            const btn = e.target;
-            const box = document.getElementById('loot-box-container');
-            const content = document.getElementById('loot-content');
-            const unknownIcon = document.getElementById('loot-unknown-icon');
-
-            // Passo 1: Abrir
-            if (btn.dataset.state === "open") {
-                // Animação
-                box.classList.add('shake-box');
                 
-                // Delay para revelar
-                setTimeout(() => {
-                    unknownIcon.classList.add('hidden');
-                    content.classList.remove('loot-hidden-content');
-                    content.classList.add('reveal-flash');
+                <div class="bg-gray-800/50 p-6 rounded-2xl cyber-border backdrop-blur-sm mb-6">
+                    <h2 class="text-lg font-semibold mb-4 text-blue-300">A vez do Mestre</h2>
+                    <p class="text-sm text-gray-400 mb-5">O Mestre escolhe a palavra e gere o jogo, não participa nas respostas.</p>
                     
-                    btn.innerText = "PEGAR ITEM";
-                    btn.dataset.state = "claim"; // Muda estado para 'pegar'
-                }, 500);
-            } 
-            // Passo 2: Pegar e Fechar
-            else if (btn.dataset.state === "claim") {
-                if (itemLootAtual) {
-                    estado.inventario.push(itemLootAtual);
-                    const type = ARMAS_ESPECIAIS.includes(itemLootAtual) ? 'epic' : 'loot';
-                    addLog(type, `ITEM_ACQUIRED: [${itemLootAtual.nome}] transferido para o inventário.`);
-                    itemLootAtual = null;
-                    ui.lootModal.classList.add('hidden');
-                    updateUI();
-                    nextEvent(); // Chama o próximo evento da fila
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Nome do Mestre</label>
+                            <input type="text" id="mestreName" placeholder="Ex: João..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Palavra Secreta</label>
+                            <input type="password" id="palavraInput" placeholder="Digite a palavra sem ninguém ver..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                            <div class="flex items-center mt-2 ml-1">
+                                <input type="checkbox" id="showWord" class="mr-2 accent-emerald-500" onchange="togglePassword()">
+                                <label for="showWord" class="text-xs text-gray-400">Mostrar palavra</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="salvarMestre()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-95 text-lg">
+                    Continuar
+                </button>
+            `;
+        }
+
+        // ECRA 2: ADICIONAR JOGADORES
+        function renderSetupJogadoresScreen() {
+            let html = `
+                <div class="text-center mb-6">
+                    <p class="text-sm text-gray-400">Mestre: <span class="font-bold text-blue-400">${state.mestre}</span></p>
+                    <h2 class="text-2xl font-bold mt-2">Adicionar Jogadores</h2>
+                </div>
+                
+                <div class="bg-gray-800/50 p-5 rounded-2xl cyber-border mb-6">
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="playerName" placeholder="Nome do jogador..." 
+                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                            onkeypress="if(event.key === 'Enter') addPlayer()">
+                        <button onclick="addPlayer()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-xl font-bold text-xl transition-colors">
+                            +
+                        </button>
+                    </div>
+                    
+                    <ul id="playersList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            `;
+
+            if (state.jogadores.length === 0) {
+                html += `<li class="text-gray-500 text-sm text-center py-4">Adicione pelo menos 3 jogadores.</li>`;
+            } else {
+                state.jogadores.forEach((player, index) => {
+                    html += `
+                        <li class="flex justify-between items-center bg-gray-700/50 px-4 py-3 rounded-xl border border-gray-600/50">
+                            <span class="font-medium">${player}</span>
+                            <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 font-bold p-1 text-lg leading-none">&times;</button>
+                        </li>
+                    `;
+                });
+            }
+
+            html += `
+                    </ul>
+                </div>
+                
+                <button onclick="iniciarSorteio()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 text-lg flex justify-center items-center gap-2">
+                    Distribuir Palavras
+                </button>
+                <button onclick="state.ecra='mestre'; render();" class="w-full mt-3 text-gray-500 text-sm py-2 underline hover:text-gray-300">
+                    Voltar para o Mestre
+                </button>
+            `;
+            appElement.innerHTML = html;
+        }
+
+        // ECRA 3: PASSAR TELEMÓVEL
+        function renderPassarScreen() {
+            const nomeAtual = state.dadosJogo[state.jogadorAtualIndex].nome;
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl cyber-border mt-10">
+                    <div class="text-6xl mb-6 animate-bounce">📱</div>
+                    <h2 class="text-xl font-medium mb-1 text-gray-400">Passe o telemóvel para</h2>
+                    <h1 class="text-4xl font-black text-white mb-8 tracking-wide">${nomeAtual}</h1>
+                    
+                    <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-8">
+                        <p class="text-amber-400/80 text-sm font-medium">⚠️ Certifique-se de que ninguém está a olhar para o seu ecrã!</p>
+                    </div>
+                    
+                    <button onclick="state.ecra='revelar'; render();" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Mostrar minha palavra
+                    </button>
+                </div>
+            `;
+        }
+
+        // ECRA 4: REVELAR
+        function renderRevelarScreen() {
+            const jogadorData = state.dadosJogo[state.jogadorAtualIndex];
+            
+            let htmlConteudo = '';
+            
+            if (jogadorData.isImpostor) {
+                htmlConteudo = `
+                    <div class="text-center bg-red-950/40 p-8 rounded-3xl impostor-border mt-10">
+                        <div class="text-6xl mb-4">🤫</div>
+                        <h2 class="text-xl text-red-300/80 font-medium tracking-widest uppercase mb-2">Você é o</h2>
+                        <h1 class="text-4xl font-black text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">IMPOSTOR</h1>
+                        <p class="text-gray-300 text-sm leading-relaxed">Não deixe que descubram. Preste atenção nas palavras dos outros para tentar adivinhar a palavra secreta!</p>
+                    </div>
+                `;
+            } else {
+                htmlConteudo = `
+                    <div class="text-center bg-blue-950/40 p-8 rounded-3xl cyber-border mt-10">
+                        <div class="text-sm text-blue-300/80 uppercase tracking-widest mb-2 font-medium">A Palavra Secreta é</div>
+                        <h1 class="text-4xl font-black text-white mb-8 tracking-wider bg-gray-900 py-4 rounded-xl border border-blue-500/30 shadow-inner">${state.palavraSecreta}</h1>
+                        <p class="text-gray-300 text-sm">Memorize a palavra. Tente descobrir quem é o impostor fazendo perguntas aos outros.</p>
+                    </div>
+                `;
+            }
+
+            appElement.innerHTML = `
+                ${htmlConteudo}
+                <div class="mt-8">
+                    <button onclick="proximoTurno()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Esconder e Continuar
+                    </button>
+                </div>
+            `;
+        }
+
+        // ECRA 5: MESTRE CONTROLA O JOGO
+        function renderJogoScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-sm text-gray-400 uppercase tracking-widest mb-1">Em Andamento</h2>
+                    <h1 class="text-2xl font-bold text-blue-400">Descubram o Impostor!</h1>
+                </div>
+
+                <div class="bg-gray-800/50 p-6 rounded-3xl cyber-border text-center mb-8">
+                    <p class="text-gray-400 mb-2 text-sm">O Mestre (<span class="text-white font-medium">${state.mestre}</span>) controla esta fase.</p>
+                    <div class="my-6">
+                        <p class="text-xs text-gray-500 mb-1">Palavra desta rodada:</p>
+                        <button onclick="alert('Palavra Secreta: ${state.palavraSecreta}')" class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg text-sm hover:bg-emerald-500/20 transition">
+                            👁️ Lembrar Mestre da Palavra
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-300">Façam perguntas à vez. Quando o grupo decidir quem é o impostor, o Mestre encerra o jogo.</p>
+                </div>
+
+                <button onclick="state.ecra='fim'; render();" class="w-full bg-red-600/90 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all active:scale-95 text-lg">
+                    Encerrar e Revelar Todos
+                </button>
+            `;
+        }
+
+        // ECRA 6: FIM
+        function renderFimScreen() {
+            const impostores = state.dadosJogo.filter(j => j.isImpostor).map(j => j.nome).join(' e ');
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl border border-gray-700 mt-6 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-red-500/5"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-lg text-gray-400 mb-2 uppercase tracking-widest font-semibold">Os Impostores eram</h2>
+                        <h1 class="text-3xl font-black text-red-500 mb-6 drop-shadow-md">${impostores}</h1>
+                        
+                        <div class="w-16 h-px bg-gray-600 mx-auto my-6"></div>
+                        
+                        <h2 class="text-sm text-gray-400 mb-2">A Palavra era</h2>
+                        <h3 class="text-2xl font-bold text-white bg-gray-900 inline-block px-6 py-2 rounded-xl border border-gray-700">${state.palavraSecreta}</h3>
+                    </div>
+                </div>
+                
+                <div class="mt-8 space-y-3">
+                    <button onclick="resetarRodada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
+                        Nova Palavra (Mesmo Mestre/Jogadores)
+                    </button>
+                    <button onclick="resetTotal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
+                        Mudar Tudo (Novo Mestre)
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- LÓGICA DO JOGO ---
+
+        function togglePassword() {
+            const input = document.getElementById('palavraInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function salvarMestre() {
+            const mestreInput = document.getElementById('mestreName').value.trim();
+            const palavraInput = document.getElementById('palavraInput').value.trim();
+
+            if (!mestreInput) {
+                alert("O Mestre precisa de um nome!");
+                return;
+            }
+            if (!palavraInput) {
+                alert("Precisas de escrever uma Palavra Secreta!");
+                return;
+            }
+
+            state.mestre = mestreInput;
+            state.palavraSecreta = palavraInput.toUpperCase();
+            state.ecra = 'setup_jogadores';
+            render();
+        }
+
+        function addPlayer() {
+            const input = document.getElementById('playerName');
+            const name = input.value.trim();
+            if (name && !state.jogadores.includes(name) && name.toLowerCase() !== state.mestre.toLowerCase()) {
+                state.jogadores.push(name);
+                input.value = '';
+                render();
+            } else if (name.toLowerCase() === state.mestre.toLowerCase()) {
+                alert("O Mestre não pode ser um jogador nesta rodada!");
+            }
+        }
+
+        function removePlayer(index) {
+            state.jogadores.splice(index, 1);
+            render();
+        }
+
+        function iniciarSorteio() {
+            if (state.jogadores.length < 3) {
+                alert("É preciso pelo menos 3 jogadores (além do Mestre)!");
+                return;
+            }
+
+            // Decidir quantidade de impostores: 1 (sempre) ou 2 (50% de probabilidade se houver 5+ jogadores)
+            let qtImpostores = 1;
+            if (state.jogadores.length >= 5 && Math.random() > 0.5) {
+                qtImpostores = 2;
+            }
+
+            // Sorteio
+            let indicesImpostores = [];
+            while(indicesImpostores.length < qtImpostores) {
+                let randomIdx = Math.floor(Math.random() * state.jogadores.length);
+                if(!indicesImpostores.includes(randomIdx)){
+                    indicesImpostores.push(randomIdx);
                 }
             }
-        });
 
-        document.getElementById('close-game-modal').addEventListener('click', () => {
-            if (window.currentReward) {
-                estado.cartas.push(window.currentReward);
-                addLog('game', `GAME_CLEAR: Dificuldade [${window.currentReward.valor}] superada. Naipe [${window.currentReward.naipe.nome}] registrado.`);
-                window.currentReward = null;
-            }
-            ui.gameModal.classList.add('hidden');
-            updateUI();
-            nextEvent(); // Chama o próximo evento da fila
-        });
-
-        window.exportarImagem = () => {
-            html2canvas(document.getElementById('capture-area'), {
-                backgroundColor: '#050505',
-                scale: 2
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `borderland-status-dia-${estado.dia}.png`;
-                link.href = canvas.toDataURL();
-                link.click();
+            state.dadosJogo = state.jogadores.map((nome, index) => {
+                return {
+                    nome: nome,
+                    isImpostor: indicesImpostores.includes(index)
+                };
             });
-        };
 
-        window.mostrarAjuda = () => ui.helpModal.classList.remove('hidden');
+            state.jogadorAtualIndex = 0;
+            state.ecra = 'passar';
+            render();
+        }
 
+        function proximoTurno() {
+            state.jogadorAtualIndex++;
+            if (state.jogadorAtualIndex >= state.dadosJogo.length) {
+                // Todos viram
+                state.ecra = 'jogo';
+            } else {
+                state.ecra = 'passar';
+            }
+            render();
+        }
+
+        function resetarRodada() {
+            state.palavraSecreta = "";
+            state.ecra = 'mestre'; // Volta a pedir palavra
+            render();
+        }
+
+        function resetTotal() {
+            state = {
+                mestre: "",
+                palavraSecreta: "",
+                jogadores: [],
+                dadosJogo: [],
+                jogadorAtualIndex: 0,
+                ecra: 'mestre'
+            };
+            render();
+        }
+
+        // Init
+        render();
     </script>
 </body>
 </html>
+
+
