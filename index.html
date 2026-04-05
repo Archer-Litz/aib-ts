@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspecção Cadavérica - Traumas de Vibração</title>
+    <title>Dossiê de Autópsia Confidencial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Biblioteca para gerar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #1a1614; 
-            font-family: 'Noto Serif', serif;
+            background-color: #2c3e50;
+            font-family: 'Courier Prime', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,236 +26,270 @@
             width: 100%;
         }
 
-        .parchment {
-            background-color: #e8dcc4;
-            background-image: 
-                radial-gradient(circle, transparent 20%, #e8dcc4 20%, #e8dcc4 80%, transparent 80%, transparent),
-                radial-gradient(circle, transparent 20%, #e8dcc4 20%, #e8dcc4 80%, transparent 80%, transparent) 25px 25px,
-                linear-gradient(#d4c3a3 2px, transparent 2px) 0 -1px,
-                linear-gradient(90deg, #d4c3a3 2px, #e8dcc4 2px) -1px 0;
-            background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
-            background: linear-gradient(to right, #d9c5a0 0%, #e8dcc4 10%, #e8dcc4 90%, #d9c5a0 100%);
-            box-shadow: 
-                inset 0 0 50px rgba(100, 70, 30, 0.5),
-                inset 0 0 20px rgba(100, 70, 30, 0.4),
-                0 10px 30px rgba(0, 0, 0, 0.8);
-            color: #2c1e16;
+        .dossier-paper {
+            background-color: #f4f1ea;
+            color: #1a1a1a;
             padding: 3rem 4rem; 
             max-width: 800px;
             width: 100%;
             position: relative;
             min-height: 1122px; 
             box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            background-image: linear-gradient(#e0dcd2 1px, transparent 1px);
+            background-size: 100% 2em;
+            line-height: 2em;
+            border-left: 2px solid #c0392b;
         }
 
-        .parchment::before {
-            content: "";
+        .dossier-paper::before, .dossier-paper::after {
+            content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            box-shadow: inset 0 0 100px rgba(80, 50, 20, 0.6);
-            pointer-events: none;
+            left: 1.5rem;
+            width: 15px;
+            height: 15px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+        }
+        
+        .dossier-paper::before { top: 15%; }
+        .dossier-paper::after { bottom: 15%; }
+
+        .furo-meio {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            width: 15px;
+            height: 15px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            transform: translateY(-50%);
         }
 
-        h1, h2, .section-title {
-            font-family: 'Cinzel', serif;
-            color: #3e2723;
+        h1, h2 {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 0;
+            line-height: 1.2;
         }
 
         h1 {
-            text-align: center;
-            border-bottom: 2px solid #5d4037;
-            padding-bottom: 15px;
             font-size: 2.2rem;
-            margin-top: 0;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 10px;
             margin-bottom: 5px;
+            background-color: #f4f1ea;
         }
 
         h2 {
-            text-align: center;
             font-size: 1.1rem;
-            font-style: italic;
-            color: #5d4037;
+            color: #555;
             margin-bottom: 30px;
-            letter-spacing: 1px;
+            background-color: #f4f1ea;
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            background-color: #f4f1ea;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #7f8c8d;
+        }
+
+        .header-info div {
+            background-color: #f4f1ea;
+            display: inline-block;
         }
 
         .section-title {
-            font-size: 1.2rem;
-            border-bottom: 1px dashed #795548;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: bold;
             margin-top: 25px;
+            background-color: #1a1a1a;
+            color: #f4f1ea;
+            padding: 5px 15px;
+            display: inline-block;
             margin-bottom: 15px;
-            padding-bottom: 5px;
-        }
-
-        .drop-cap:first-letter {
-            float: left;
-            font-family: 'Cinzel', serif;
-            font-size: 4.5rem;
-            line-height: 3.5rem;
-            padding-top: 8px;
-            padding-right: 12px;
-            padding-left: 3px;
-            color: #4e342e;
         }
 
         p, li {
-            line-height: 1.7;
+            margin-top: 0;
+            margin-bottom: 0; 
             text-align: justify;
-            margin-bottom: 1.2rem;
-            font-size: 1.05rem;
+            background-color: rgba(244, 241, 234, 0.8); 
         }
 
         ul {
-            margin-bottom: 1.5rem;
-            padding-left: 20px;
-            list-style-type: square;
-            color: #3e2723;
+            margin-bottom: 0;
+            padding-left: 30px;
+            list-style-type: "— ";
+        }
+
+        .highlight-red {
+            color: #c0392b;
+            font-weight: bold;
         }
 
         .stamp-overlay {
             position: absolute;
-            top: 40%;
-            left: 20%;
-            font-family: 'Cinzel', serif;
-            font-size: 8rem;
-            color: rgba(139, 0, 0, 0.08);
-            transform: rotate(-35deg);
+            top: 25%;
+            right: 5%;
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: rgba(192, 57, 43, 0.3);
+            border: 8px solid rgba(192, 57, 43, 0.3);
+            padding: 10px;
+            transform: rotate(15deg);
             pointer-events: none;
             user-select: none;
-            letter-spacing: 10px;
+            letter-spacing: 5px;
+            z-index: 10;
         }
 
-        .seal {
-            margin-top: 3rem;
+        .signature-area {
+            margin-top: 50px;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+            justify-content: flex-end;
+            background-color: #f4f1ea;
+        }
+
+        .signature-box {
+            text-align: center;
+            background-color: #f4f1ea;
+            padding-top: 10px;
         }
 
         .signature-line {
             width: 250px;
-            border-top: 1px solid #3e2723;
-            text-align: center;
-            padding-top: 5px;
-            font-size: 0.9rem;
-            font-style: italic;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 5px;
         }
 
-        .seal-circle {
-            width: 90px;
-            height: 90px;
-            border: 4px double #8b0000;
-            border-radius: 5px;
-            color: #8b0000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            font-weight: bold;
-            transform: rotate(-5deg);
+        .signature-box img {
+            max-width: 150px;
             opacity: 0.8;
-            mix-blend-mode: multiply;
-            text-align: center;
-            padding: 5px;
+            margin-top: -30px;
+            margin-bottom: -10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .download-btn {
             margin-top: 30px;
-            background-color: #3e2723;
-            color: #e8dcc4;
-            font-family: 'Cinzel', serif;
+            background-color: #c0392b;
+            color: white;
+            font-family: 'Courier Prime', monospace;
             padding: 12px 24px;
-            border: 2px solid #2c1e16;
-            border-radius: 5px;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 1.1rem;
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .download-btn:hover {
-            background-color: #2c1e16;
+            background-color: #962d22;
             transform: translateY(-2px);
         }
 
         @media (max-width: 640px) {
-            .parchment { padding: 2rem; min-height: auto; }
-            .seal { flex-direction: column; align-items: center; gap: 30px; }
-            h1 { font-size: 1.8rem; }
+            .dossier-paper { padding: 2rem 2rem 2rem 3.5rem; min-height: auto; }
+            .header-info { grid-template-columns: 1fr; }
+            h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
 
     <div id="document-container">
-        <div class="parchment" id="scroll-content">
+        <div class="dossier-paper" id="dossier-content">
             
-            <div class="stamp-overlay">ÓBITO</div>
+            <div class="furo-meio"></div>
+            <div class="stamp-overlay">CONFIDENCIAL</div>
 
-            <h1>Registo Cadavérico Oficial</h1>
-            <h2>Inspecção Preliminar - Distrito Central de Heiankyō</h2>
+            <h1>Dossiê Forense de Ocorrência</h1>
+            <h2>Departamento de Investigação</h2>
 
-            <p class="drop-cap">
-                O presente documento detalha o estado físico de um feiticeiro abatido em via pública, no centro da capital. A ocorrência atraiu considerável agitação devido à natureza atípica dos ferimentos e ao rasto residual de energia amaldiçoada densa e ressonante deixado no local.
+            <div class="header-info">
+                <div>CASO Nº: 044-TRIO</div>
+                <div>DATA DA NECRÓPSIA: [OCULTADA]</div>
+                <div>SUJEITO: Não Identificado (NPC)</div>
+                <div>EXAMINADOR: DANIEL.R</div>
+            </div>
+
+            <div class="section-title">1. ESTADO GERAL E AUTORIA</div>
+            <p>
+                O indivíduo foi admitido no necrotério apresentando ferimentos de extrema violência. As evidências e os rastros deixados no local do crime confirmam que o homicídio foi executado por um esforço conjunto de três indivíduos, identificados pelas alcunhas de <span class="highlight-red">Aka, Naris e Koi</span>. Sabe-se que Naris é um Mink comum, mas o grupo operou em sincronia letal para subjugar a vítima.
             </p>
 
-            <div class="section-title">I. Avaliação Externa e Local da Ocorrência</div>
+            <div class="section-title">2. CAUSAS DO ÓBITO (GOLPES FATAIS)</div>
             <p>
-                O cadáver foi encontrado em decúbito dorsal. A análise do perímetro revela que não houve o uso de armamento contundente ou cortante. As pedras do pavimento ao redor do corpo apresentavam fissuras radiais, sugerindo que o sujeito foi alvo de sucessivos impactos cinéticos de força anormal, descarregados diretamente contra o seu torso e crânio.
-            </p>
-
-            <div class="section-title">II. Análise de Traumas e Causa Mortis</div>
-            <p>
-                A inspecção táctil e a dissecação preliminar indicam que a causa do óbito resultou de severa falência múltipla de órgãos induzida por trauma de força brusca. Contudo, as lesões não são consistentes com mero espancamento físico.
+                A morte resultou da combinação de danos críticos aplicados pelos agressores:
             </p>
             <ul>
-                <li><strong>Trauma Torácico:</strong> Observam-se três pontos de impacto principais no peito. O esterno encontra-se completamente pulverizado. As marcas na pele indicam socos diretos.</li>
-                <li><strong>Ondas de Choque Internas:</strong> O mais alarmante é o estado das vísceras. Órgãos que não sofreram contacto direto (como o fígado e os rins) apresentam ruturas completas, reduzidos a um estado gelatinoso. </li>
-                <li><strong>Danos Ósseos Sistémicos:</strong> Múltiplas microfraturas foram registadas em ossos distantes dos pontos de impacto, como os fémures e a pélvis.</li>
+                <li><span class="highlight-red">Trauma Craniano:</span> A abóbada craniana superior encontra-se completamente esmagada. A compactação sugere um impacto descendente de força absurda. Relatos apontam Naris como o autor deste golpe.</li>
+                <li><span class="highlight-red">Perfuração Cardíaca:</span> O esterno e as costelas esquerdas foram perfuradas. O músculo cardíaco apresenta uma laceração trespassante anómala, indicando um golpe rápido e letal atribuído a Koi.</li>
+                <li>As contusões e fraturas periféricas confirmam o envolvimento direto de Aka na imobilização e cerco do alvo.</li>
             </ul>
 
-            <div class="section-title">III. Conclusão da Inspecção</div>
+            <div class="section-title">3. O MISTÉRIO DAS MUTILAÇÕES PRÉVIAS</div>
             <p>
-                Os padrões de lesão confirmam a exposição a uma técnica amaldiçoada de combate corpo a corpo de alta letalidade. O agressor não confiou apenas na força bruta dos seus socos, mas infundiu-os com uma propriedade capaz de gerar vibrações extremas ou ondas de choque percussivas. Cada golpe desferido transmitiu oscilações destrutivas através da densidade óssea e dos fluidos corporais da vítima, destruindo os seus órgãos internos em instantes, muito antes do corpo ceder ao chão.
+                A descoberta mais alarmante desta autópsia reside no estado estrutural do corpo <span class="highlight-red">antes</span> da intervenção do trio. Ao contrário da suposição inicial, as partes em falta não foram excisadas pós-morte por Aka, Naris ou Koi. O indivíduo já se encontrava mutilado antes do embate final:
             </p>
+            <ul>
+                <li>A mão direita (do pulso para baixo), o globo ocular esquerdo e três vértebras cervicais (C3 a C5) foram arrancados do corpo em circunstâncias prévias.</li>
+                <li>As margens destas amputações apresentam sinais de coagulação forçada e exaustão dos tecidos, indicando que a vítima sofreu estes danos em pleno combate com um oponente desconhecido.</li>
+            </ul>
             <p>
-                Recomenda-se extrema cautela às patrulhas locais. O indivíduo responsável possui destreza marcial superior e uma técnica capaz de contornar reforços defensivos de energia amaldiçoada padrão.
+                Conclusão: Antes de ser emboscado e executado pelo trio, a vítima sobreviveu a um confronto devastador anterior. Alguém — ou alguma coisa — arrancou e roubou as suas partes corporais como troféus durante a luta, deixando o indivíduo gravemente ferido e vulnerável à finalização de Aka, Naris e Koi.
             </p>
 
-            <div class="seal">
-                <div class="signature-line">
-                    Arquivista Meticuloso<br>
-                    <strong>Daniel.R</strong>
+            <div class="signature-area">
+                <div class="signature-box">
+                    <svg viewBox="0 0 200 50" style="width: 150px; height: 50px; stroke: #1a1a1a; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; transform: translateY(15px); margin-bottom: -15px;">
+                        <path d="M10,40 Q30,10 40,30 T60,20 T80,40 Q100,-10 120,30 T150,20 Q170,40 180,10 M40,30 C50,20 60,40 70,30 M120,30 C130,20 140,40 150,30" />
+                    </svg>
+                    <div class="signature-line"></div>
+                    <strong>Perito Legista: Daniel.R</strong><br>
+                    <span style="font-size: 0.8rem; background-color: #f4f1ea;">Departamento Médico Legal</span>
                 </div>
-                <div class="seal-circle">REGISTO<br>CONCLUÍDO</div>
             </div>
 
         </div>
     </div>
 
-    <button class="download-btn" onclick="generatePDF()">
+    <button class="download-btn" onclick="gerarPDF()">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Descarregar Registo (PDF)
+        Salvar Dossiê em PDF
     </button>
 
     <script>
-        function generatePDF() {
-            const element = document.getElementById('scroll-content');
+        function gerarPDF() {
+            const elemento = document.getElementById('dossier-content');
             
-            const opt = {
-                margin:       [0, 0, 0, 0], 
-                filename:     'Inspecao_Trauma_Vibracao_DanielR.pdf',
+            const opcoes = {
+                margin:       [0, 0, 0, 0],
+                filename:     'Dossie_Morte_Trio_MutilacaoPrevia.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(opcoes).from(elemento).save();
         }
     </script>
 
