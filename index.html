@@ -3,376 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo do Impostor - por Daniel Ruas</title>
+    <title>Inspecção Cadavérica - Traumas de Vibração</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #111827; /* cinza muito escuro */
-            color: #f3f4f6;
+            background-color: #1a1614; 
+            font-family: 'Noto Serif', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #document-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .parchment {
+            background-color: #e8dcc4;
+            background-image: 
+                radial-gradient(circle, transparent 20%, #e8dcc4 20%, #e8dcc4 80%, transparent 80%, transparent),
+                radial-gradient(circle, transparent 20%, #e8dcc4 20%, #e8dcc4 80%, transparent 80%, transparent) 25px 25px,
+                linear-gradient(#d4c3a3 2px, transparent 2px) 0 -1px,
+                linear-gradient(90deg, #d4c3a3 2px, #e8dcc4 2px) -1px 0;
+            background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
+            background: linear-gradient(to right, #d9c5a0 0%, #e8dcc4 10%, #e8dcc4 90%, #d9c5a0 100%);
+            box-shadow: 
+                inset 0 0 50px rgba(100, 70, 30, 0.5),
+                inset 0 0 20px rgba(100, 70, 30, 0.4),
+                0 10px 30px rgba(0, 0, 0, 0.8);
+            color: #2c1e16;
+            padding: 3rem 4rem; 
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            min-height: 1122px; 
+            box-sizing: border-box;
+        }
+
+        .parchment::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 100px rgba(80, 50, 20, 0.6);
+            pointer-events: none;
+        }
+
+        h1, h2, .section-title {
+            font-family: 'Cinzel', serif;
+            color: #3e2723;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #5d4037;
+            padding-bottom: 15px;
+            font-size: 2.2rem;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.1rem;
+            font-style: italic;
+            color: #5d4037;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            border-bottom: 1px dashed #795548;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .drop-cap:first-letter {
+            float: left;
+            font-family: 'Cinzel', serif;
+            font-size: 4.5rem;
+            line-height: 3.5rem;
+            padding-top: 8px;
+            padding-right: 12px;
+            padding-left: 3px;
+            color: #4e342e;
+        }
+
+        p, li {
+            line-height: 1.7;
+            text-align: justify;
+            margin-bottom: 1.2rem;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 20px;
+            list-style-type: square;
+            color: #3e2723;
+        }
+
+        .stamp-overlay {
+            position: absolute;
+            top: 40%;
+            left: 20%;
+            font-family: 'Cinzel', serif;
+            font-size: 8rem;
+            color: rgba(139, 0, 0, 0.08);
+            transform: rotate(-35deg);
+            pointer-events: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            letter-spacing: 10px;
         }
 
-        .fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        .seal {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .signature-line {
+            width: 250px;
+            border-top: 1px solid #3e2723;
+            text-align: center;
+            padding-top: 5px;
+            font-size: 0.9rem;
+            font-style: italic;
         }
 
-        .cyber-border {
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+        .seal-circle {
+            width: 90px;
+            height: 90px;
+            border: 4px double #8b0000;
+            border-radius: 5px;
+            color: #8b0000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: bold;
+            transform: rotate(-5deg);
+            opacity: 0.8;
+            mix-blend-mode: multiply;
+            text-align: center;
+            padding: 5px;
         }
-        
-        .impostor-border {
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+
+        .download-btn {
+            margin-top: 30px;
+            background-color: #3e2723;
+            color: #e8dcc4;
+            font-family: 'Cinzel', serif;
+            padding: 12px 24px;
+            border: 2px solid #2c1e16;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            background-color: #2c1e16;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 640px) {
+            .parchment { padding: 2rem; min-height: auto; }
+            .seal { flex-direction: column; align-items: center; gap: 30px; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center">
+<body>
 
-    <main id="app" class="w-full max-w-sm mx-auto p-5 fade-in">
-        <!-- Conteúdo gerado via JS -->
-    </main>
+    <div id="document-container">
+        <div class="parchment" id="scroll-content">
+            
+            <div class="stamp-overlay">ÓBITO</div>
+
+            <h1>Registo Cadavérico Oficial</h1>
+            <h2>Inspecção Preliminar - Distrito Central de Heiankyō</h2>
+
+            <p class="drop-cap">
+                O presente documento detalha o estado físico de um feiticeiro abatido em via pública, no centro da capital. A ocorrência atraiu considerável agitação devido à natureza atípica dos ferimentos e ao rasto residual de energia amaldiçoada densa e ressonante deixado no local.
+            </p>
+
+            <div class="section-title">I. Avaliação Externa e Local da Ocorrência</div>
+            <p>
+                O cadáver foi encontrado em decúbito dorsal. A análise do perímetro revela que não houve o uso de armamento contundente ou cortante. As pedras do pavimento ao redor do corpo apresentavam fissuras radiais, sugerindo que o sujeito foi alvo de sucessivos impactos cinéticos de força anormal, descarregados diretamente contra o seu torso e crânio.
+            </p>
+
+            <div class="section-title">II. Análise de Traumas e Causa Mortis</div>
+            <p>
+                A inspecção táctil e a dissecação preliminar indicam que a causa do óbito resultou de severa falência múltipla de órgãos induzida por trauma de força brusca. Contudo, as lesões não são consistentes com mero espancamento físico.
+            </p>
+            <ul>
+                <li><strong>Trauma Torácico:</strong> Observam-se três pontos de impacto principais no peito. O esterno encontra-se completamente pulverizado. As marcas na pele indicam socos diretos.</li>
+                <li><strong>Ondas de Choque Internas:</strong> O mais alarmante é o estado das vísceras. Órgãos que não sofreram contacto direto (como o fígado e os rins) apresentam ruturas completas, reduzidos a um estado gelatinoso. </li>
+                <li><strong>Danos Ósseos Sistémicos:</strong> Múltiplas microfraturas foram registadas em ossos distantes dos pontos de impacto, como os fémures e a pélvis.</li>
+            </ul>
+
+            <div class="section-title">III. Conclusão da Inspecção</div>
+            <p>
+                Os padrões de lesão confirmam a exposição a uma técnica amaldiçoada de combate corpo a corpo de alta letalidade. O agressor não confiou apenas na força bruta dos seus socos, mas infundiu-os com uma propriedade capaz de gerar vibrações extremas ou ondas de choque percussivas. Cada golpe desferido transmitiu oscilações destrutivas através da densidade óssea e dos fluidos corporais da vítima, destruindo os seus órgãos internos em instantes, muito antes do corpo ceder ao chão.
+            </p>
+            <p>
+                Recomenda-se extrema cautela às patrulhas locais. O indivíduo responsável possui destreza marcial superior e uma técnica capaz de contornar reforços defensivos de energia amaldiçoada padrão.
+            </p>
+
+            <div class="seal">
+                <div class="signature-line">
+                    Arquivista Meticuloso<br>
+                    <strong>Daniel.R</strong>
+                </div>
+                <div class="seal-circle">REGISTO<br>CONCLUÍDO</div>
+            </div>
+
+        </div>
+    </div>
+
+    <button class="download-btn" onclick="generatePDF()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Descarregar Registo (PDF)
+    </button>
 
     <script>
-        // --- ESTADO DO JOGO ---
-        let state = {
-            mestre: "",
-            palavraSecreta: "",
-            jogadores: [],
-            dadosJogo: [], // Array com { nome, isImpostor }
-            jogadorAtualIndex: 0,
-            ecra: 'mestre' // 'mestre', 'setup_jogadores', 'passar', 'revelar', 'jogo', 'fim'
-        };
-
-        const appElement = document.getElementById('app');
-
-        // --- FUNÇÕES DE RENDERIZAÇÃO ---
-        function render() {
-            appElement.innerHTML = '';
-            appElement.className = "w-full max-w-sm mx-auto p-5 fade-in"; 
-
-            switch (state.ecra) {
-                case 'mestre': renderMestreScreen(); break;
-                case 'setup_jogadores': renderSetupJogadoresScreen(); break;
-                case 'passar': renderPassarScreen(); break;
-                case 'revelar': renderRevelarScreen(); break;
-                case 'jogo': renderJogoScreen(); break;
-                case 'fim': renderFimScreen(); break;
-            }
-        }
-
-        // ECRA 1: DEFINIR MESTRE E PALAVRA
-        function renderMestreScreen() {
-            appElement.innerHTML = `
-                <div class="text-center mb-8">
-                    <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-1">IMPOSTOR</h1>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">por Daniel Ruas</p>
-                </div>
-                
-                <div class="bg-gray-800/50 p-6 rounded-2xl cyber-border backdrop-blur-sm mb-6">
-                    <h2 class="text-lg font-semibold mb-4 text-blue-300">A vez do Mestre</h2>
-                    <p class="text-sm text-gray-400 mb-5">O Mestre escolhe a palavra e gere o jogo, não participa nas respostas.</p>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1 ml-1">Nome do Mestre</label>
-                            <input type="text" id="mestreName" placeholder="Ex: João..." 
-                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1 ml-1">Palavra Secreta</label>
-                            <input type="password" id="palavraInput" placeholder="Digite a palavra sem ninguém ver..." 
-                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
-                            <div class="flex items-center mt-2 ml-1">
-                                <input type="checkbox" id="showWord" class="mr-2 accent-emerald-500" onchange="togglePassword()">
-                                <label for="showWord" class="text-xs text-gray-400">Mostrar palavra</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button onclick="salvarMestre()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-95 text-lg">
-                    Continuar
-                </button>
-            `;
-        }
-
-        // ECRA 2: ADICIONAR JOGADORES
-        function renderSetupJogadoresScreen() {
-            let html = `
-                <div class="text-center mb-6">
-                    <p class="text-sm text-gray-400">Mestre: <span class="font-bold text-blue-400">${state.mestre}</span></p>
-                    <h2 class="text-2xl font-bold mt-2">Adicionar Jogadores</h2>
-                </div>
-                
-                <div class="bg-gray-800/50 p-5 rounded-2xl cyber-border mb-6">
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="playerName" placeholder="Nome do jogador..." 
-                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
-                            onkeypress="if(event.key === 'Enter') addPlayer()">
-                        <button onclick="addPlayer()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-xl font-bold text-xl transition-colors">
-                            +
-                        </button>
-                    </div>
-                    
-                    <ul id="playersList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-            `;
-
-            if (state.jogadores.length === 0) {
-                html += `<li class="text-gray-500 text-sm text-center py-4">Adicione pelo menos 3 jogadores.</li>`;
-            } else {
-                state.jogadores.forEach((player, index) => {
-                    html += `
-                        <li class="flex justify-between items-center bg-gray-700/50 px-4 py-3 rounded-xl border border-gray-600/50">
-                            <span class="font-medium">${player}</span>
-                            <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 font-bold p-1 text-lg leading-none">&times;</button>
-                        </li>
-                    `;
-                });
-            }
-
-            html += `
-                    </ul>
-                </div>
-                
-                <button onclick="iniciarSorteio()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 text-lg flex justify-center items-center gap-2">
-                    Distribuir Palavras
-                </button>
-                <button onclick="state.ecra='mestre'; render();" class="w-full mt-3 text-gray-500 text-sm py-2 underline hover:text-gray-300">
-                    Voltar para o Mestre
-                </button>
-            `;
-            appElement.innerHTML = html;
-        }
-
-        // ECRA 3: PASSAR TELEMÓVEL
-        function renderPassarScreen() {
-            const nomeAtual = state.dadosJogo[state.jogadorAtualIndex].nome;
-
-            appElement.innerHTML = `
-                <div class="text-center bg-gray-800/80 p-8 rounded-3xl cyber-border mt-10">
-                    <div class="text-6xl mb-6 animate-bounce">📱</div>
-                    <h2 class="text-xl font-medium mb-1 text-gray-400">Passe o telemóvel para</h2>
-                    <h1 class="text-4xl font-black text-white mb-8 tracking-wide">${nomeAtual}</h1>
-                    
-                    <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-8">
-                        <p class="text-amber-400/80 text-sm font-medium">⚠️ Certifique-se de que ninguém está a olhar para o seu ecrã!</p>
-                    </div>
-                    
-                    <button onclick="state.ecra='revelar'; render();" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
-                        Mostrar minha palavra
-                    </button>
-                </div>
-            `;
-        }
-
-        // ECRA 4: REVELAR
-        function renderRevelarScreen() {
-            const jogadorData = state.dadosJogo[state.jogadorAtualIndex];
+        function generatePDF() {
+            const element = document.getElementById('scroll-content');
             
-            let htmlConteudo = '';
-            
-            if (jogadorData.isImpostor) {
-                htmlConteudo = `
-                    <div class="text-center bg-red-950/40 p-8 rounded-3xl impostor-border mt-10">
-                        <div class="text-6xl mb-4">🤫</div>
-                        <h2 class="text-xl text-red-300/80 font-medium tracking-widest uppercase mb-2">Você é o</h2>
-                        <h1 class="text-4xl font-black text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">IMPOSTOR</h1>
-                        <p class="text-gray-300 text-sm leading-relaxed">Não deixe que descubram. Preste atenção nas palavras dos outros para tentar adivinhar a palavra secreta!</p>
-                    </div>
-                `;
-            } else {
-                htmlConteudo = `
-                    <div class="text-center bg-blue-950/40 p-8 rounded-3xl cyber-border mt-10">
-                        <div class="text-sm text-blue-300/80 uppercase tracking-widest mb-2 font-medium">A Palavra Secreta é</div>
-                        <h1 class="text-4xl font-black text-white mb-8 tracking-wider bg-gray-900 py-4 rounded-xl border border-blue-500/30 shadow-inner">${state.palavraSecreta}</h1>
-                        <p class="text-gray-300 text-sm">Memorize a palavra. Tente descobrir quem é o impostor fazendo perguntas aos outros.</p>
-                    </div>
-                `;
-            }
-
-            appElement.innerHTML = `
-                ${htmlConteudo}
-                <div class="mt-8">
-                    <button onclick="proximoTurno()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
-                        Esconder e Continuar
-                    </button>
-                </div>
-            `;
-        }
-
-        // ECRA 5: MESTRE CONTROLA O JOGO
-        function renderJogoScreen() {
-            appElement.innerHTML = `
-                <div class="text-center mb-8">
-                    <h2 class="text-sm text-gray-400 uppercase tracking-widest mb-1">Em Andamento</h2>
-                    <h1 class="text-2xl font-bold text-blue-400">Descubram o Impostor!</h1>
-                </div>
-
-                <div class="bg-gray-800/50 p-6 rounded-3xl cyber-border text-center mb-8">
-                    <p class="text-gray-400 mb-2 text-sm">O Mestre (<span class="text-white font-medium">${state.mestre}</span>) controla esta fase.</p>
-                    <div class="my-6">
-                        <p class="text-xs text-gray-500 mb-1">Palavra desta rodada:</p>
-                        <button onclick="alert('Palavra Secreta: ${state.palavraSecreta}')" class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg text-sm hover:bg-emerald-500/20 transition">
-                            👁️ Lembrar Mestre da Palavra
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-300">Façam perguntas à vez. Quando o grupo decidir quem é o impostor, o Mestre encerra o jogo.</p>
-                </div>
-
-                <button onclick="state.ecra='fim'; render();" class="w-full bg-red-600/90 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all active:scale-95 text-lg">
-                    Encerrar e Revelar Todos
-                </button>
-            `;
-        }
-
-        // ECRA 6: FIM
-        function renderFimScreen() {
-            const impostores = state.dadosJogo.filter(j => j.isImpostor).map(j => j.nome).join(' e ');
-
-            appElement.innerHTML = `
-                <div class="text-center bg-gray-800/80 p-8 rounded-3xl border border-gray-700 mt-6 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-red-500/5"></div>
-                    <div class="relative z-10">
-                        <h2 class="text-lg text-gray-400 mb-2 uppercase tracking-widest font-semibold">Os Impostores eram</h2>
-                        <h1 class="text-3xl font-black text-red-500 mb-6 drop-shadow-md">${impostores}</h1>
-                        
-                        <div class="w-16 h-px bg-gray-600 mx-auto my-6"></div>
-                        
-                        <h2 class="text-sm text-gray-400 mb-2">A Palavra era</h2>
-                        <h3 class="text-2xl font-bold text-white bg-gray-900 inline-block px-6 py-2 rounded-xl border border-gray-700">${state.palavraSecreta}</h3>
-                    </div>
-                </div>
-                
-                <div class="mt-8 space-y-3">
-                    <button onclick="resetarRodada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
-                        Nova Palavra (Mesmo Mestre/Jogadores)
-                    </button>
-                    <button onclick="resetTotal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
-                        Mudar Tudo (Novo Mestre)
-                    </button>
-                </div>
-            `;
-        }
-
-        // --- LÓGICA DO JOGO ---
-
-        function togglePassword() {
-            const input = document.getElementById('palavraInput');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        function salvarMestre() {
-            const mestreInput = document.getElementById('mestreName').value.trim();
-            const palavraInput = document.getElementById('palavraInput').value.trim();
-
-            if (!mestreInput) {
-                alert("O Mestre precisa de um nome!");
-                return;
-            }
-            if (!palavraInput) {
-                alert("Precisas de escrever uma Palavra Secreta!");
-                return;
-            }
-
-            state.mestre = mestreInput;
-            state.palavraSecreta = palavraInput.toUpperCase();
-            state.ecra = 'setup_jogadores';
-            render();
-        }
-
-        function addPlayer() {
-            const input = document.getElementById('playerName');
-            const name = input.value.trim();
-            if (name && !state.jogadores.includes(name) && name.toLowerCase() !== state.mestre.toLowerCase()) {
-                state.jogadores.push(name);
-                input.value = '';
-                render();
-            } else if (name.toLowerCase() === state.mestre.toLowerCase()) {
-                alert("O Mestre não pode ser um jogador nesta rodada!");
-            }
-        }
-
-        function removePlayer(index) {
-            state.jogadores.splice(index, 1);
-            render();
-        }
-
-        function iniciarSorteio() {
-            if (state.jogadores.length < 3) {
-                alert("É preciso pelo menos 3 jogadores (além do Mestre)!");
-                return;
-            }
-
-            // Decidir quantidade de impostores: 1 (sempre) ou 2 (50% de probabilidade se houver 5+ jogadores)
-            let qtImpostores = 1;
-            if (state.jogadores.length >= 5 && Math.random() > 0.5) {
-                qtImpostores = 2;
-            }
-
-            // Sorteio
-            let indicesImpostores = [];
-            while(indicesImpostores.length < qtImpostores) {
-                let randomIdx = Math.floor(Math.random() * state.jogadores.length);
-                if(!indicesImpostores.includes(randomIdx)){
-                    indicesImpostores.push(randomIdx);
-                }
-            }
-
-            state.dadosJogo = state.jogadores.map((nome, index) => {
-                return {
-                    nome: nome,
-                    isImpostor: indicesImpostores.includes(index)
-                };
-            });
-
-            state.jogadorAtualIndex = 0;
-            state.ecra = 'passar';
-            render();
-        }
-
-        function proximoTurno() {
-            state.jogadorAtualIndex++;
-            if (state.jogadorAtualIndex >= state.dadosJogo.length) {
-                // Todos viram
-                state.ecra = 'jogo';
-            } else {
-                state.ecra = 'passar';
-            }
-            render();
-        }
-
-        function resetarRodada() {
-            state.palavraSecreta = "";
-            state.ecra = 'mestre'; // Volta a pedir palavra
-            render();
-        }
-
-        function resetTotal() {
-            state = {
-                mestre: "",
-                palavraSecreta: "",
-                jogadores: [],
-                dadosJogo: [],
-                jogadorAtualIndex: 0,
-                ecra: 'mestre'
+            const opt = {
+                margin:       [0, 0, 0, 0], 
+                filename:     'Inspecao_Trauma_Vibracao_DanielR.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
-            render();
-        }
 
-        // Init
-        render();
+            html2pdf().set(opt).from(element).save();
+        }
     </script>
+
 </body>
 </html>
-
 
