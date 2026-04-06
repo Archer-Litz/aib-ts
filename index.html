@@ -3,296 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dossiê de Autópsia Confidencial</title>
+    <title>Jogo do Impostor - por Daniel Ruas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Biblioteca para gerar PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
         body {
-            background-color: #2c3e50;
-            font-family: 'Courier Prime', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Outfit', sans-serif;
+            background-color: #111827; /* cinza muito escuro */
+            color: #f3f4f6;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        #document-container {
-            display: flex;
-            justify-content: center;
-            width: 100%;
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .dossier-paper {
-            background-color: #f4f1ea;
-            color: #1a1a1a;
-            padding: 3rem 4rem; 
-            max-width: 800px;
-            width: 100%;
-            position: relative;
-            min-height: 1122px; 
-            box-sizing: border-box;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            background-image: linear-gradient(#e0dcd2 1px, transparent 1px);
-            background-size: 100% 2em;
-            line-height: 2em;
-            border-left: 2px solid #c0392b;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .dossier-paper::before, .dossier-paper::after {
-            content: '';
-            position: absolute;
-            left: 1.5rem;
-            width: 15px;
-            height: 15px;
-            background-color: #2c3e50;
-            border-radius: 50%;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+        .cyber-border {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
         }
         
-        .dossier-paper::before { top: 15%; }
-        .dossier-paper::after { bottom: 15%; }
-
-        .furo-meio {
-            position: absolute;
-            left: 1.5rem;
-            top: 50%;
-            width: 15px;
-            height: 15px;
-            background-color: #2c3e50;
-            border-radius: 50%;
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
-            transform: translateY(-50%);
-        }
-
-        h1, h2 {
-            font-family: 'Playfair Display', serif;
-            text-align: center;
-            text-transform: uppercase;
-            margin-top: 0;
-            line-height: 1.2;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-            border-bottom: 2px solid #1a1a1a;
-            padding-bottom: 10px;
-            margin-bottom: 5px;
-            background-color: #f4f1ea;
-        }
-
-        h2 {
-            font-size: 1.1rem;
-            color: #555;
-            margin-bottom: 30px;
-            background-color: #f4f1ea;
-        }
-
-        .header-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 30px;
-            font-weight: bold;
-            background-color: #f4f1ea;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed #7f8c8d;
-        }
-
-        .header-info div {
-            background-color: #f4f1ea;
-            display: inline-block;
-        }
-
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-top: 25px;
-            background-color: #1a1a1a;
-            color: #f4f1ea;
-            padding: 5px 15px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        p, li {
-            margin-top: 0;
-            margin-bottom: 0; 
-            text-align: justify;
-            background-color: rgba(244, 241, 234, 0.8); 
-        }
-
-        ul {
-            margin-bottom: 0;
-            padding-left: 30px;
-            list-style-type: "— ";
-        }
-
-        .highlight-red {
-            color: #c0392b;
-            font-weight: bold;
-        }
-
-        .stamp-overlay {
-            position: absolute;
-            top: 25%;
-            right: 5%;
-            font-family: 'Playfair Display', serif;
-            font-size: 4rem;
-            color: rgba(192, 57, 43, 0.3);
-            border: 8px solid rgba(192, 57, 43, 0.3);
-            padding: 10px;
-            transform: rotate(15deg);
-            pointer-events: none;
-            user-select: none;
-            letter-spacing: 5px;
-            z-index: 10;
-        }
-
-        .signature-area {
-            margin-top: 50px;
-            display: flex;
-            justify-content: flex-end;
-            background-color: #f4f1ea;
-        }
-
-        .signature-box {
-            text-align: center;
-            background-color: #f4f1ea;
-            padding-top: 10px;
-        }
-
-        .signature-line {
-            width: 250px;
-            border-bottom: 1px solid #1a1a1a;
-            margin-bottom: 5px;
-        }
-
-        .signature-box img {
-            max-width: 150px;
-            opacity: 0.8;
-            margin-top: -30px;
-            margin-bottom: -10px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .download-btn {
-            margin-top: 30px;
-            background-color: #c0392b;
-            color: white;
-            font-family: 'Courier Prime', monospace;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .download-btn:hover {
-            background-color: #962d22;
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 640px) {
-            .dossier-paper { padding: 2rem 2rem 2rem 3.5rem; min-height: auto; }
-            .header-info { grid-template-columns: 1fr; }
-            h1 { font-size: 1.6rem; }
+        .impostor-border {
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-center">
 
-    <div id="document-container">
-        <div class="dossier-paper" id="dossier-content">
-            
-            <div class="furo-meio"></div>
-            <div class="stamp-overlay">CONFIDENCIAL</div>
-
-            <h1>Dossiê Forense de Ocorrência</h1>
-            <h2>Departamento de Investigação</h2>
-
-            <div class="header-info">
-                <div>CASO Nº: 044-TRIO</div>
-                <div>DATA DA NECRÓPSIA: [OCULTADA]</div>
-                <div>SUJEITO: Não Identificado (NPC)</div>
-                <div>EXAMINADOR: DANIEL.R</div>
-            </div>
-
-            <div class="section-title">1. ESTADO GERAL E AUTORIA</div>
-            <p>
-                O indivíduo foi admitido no necrotério apresentando ferimentos de extrema violência. As evidências e os rastros deixados no local do crime confirmam que o homicídio foi executado por um esforço conjunto de três indivíduos, identificados pelas alcunhas de <span class="highlight-red">Aka, Naris e Koi</span>. Sabe-se que Naris é um Mink comum, mas o grupo operou em sincronia letal para subjugar a vítima.
-            </p>
-
-            <div class="section-title">2. CAUSAS DO ÓBITO (GOLPES FATAIS)</div>
-            <p>
-                A morte resultou da combinação de danos críticos aplicados pelos agressores:
-            </p>
-            <ul>
-                <li><span class="highlight-red">Trauma Craniano:</span> A abóbada craniana superior encontra-se completamente esmagada. A compactação sugere um impacto descendente de força absurda. Relatos apontam Naris como o autor deste golpe.</li>
-                <li><span class="highlight-red">Perfuração Cardíaca:</span> O esterno e as costelas esquerdas foram perfuradas. O músculo cardíaco apresenta uma laceração trespassante anómala, indicando um golpe rápido e letal atribuído a Koi.</li>
-                <li>As contusões e fraturas periféricas confirmam o envolvimento direto de Aka na imobilização e cerco do alvo.</li>
-            </ul>
-
-            <div class="section-title">3. O MISTÉRIO DAS MUTILAÇÕES PRÉVIAS</div>
-            <p>
-                A descoberta mais alarmante desta autópsia reside no estado estrutural do corpo <span class="highlight-red">antes</span> da intervenção do trio. Ao contrário da suposição inicial, as partes em falta não foram excisadas pós-morte por Aka, Naris ou Koi. O indivíduo já se encontrava mutilado antes do embate final:
-            </p>
-            <ul>
-                <li>A mão direita (do pulso para baixo), o globo ocular esquerdo e três vértebras cervicais (C3 a C5) foram arrancados do corpo em circunstâncias prévias.</li>
-                <li>As margens destas amputações apresentam sinais de coagulação forçada e exaustão dos tecidos, indicando que a vítima sofreu estes danos em pleno combate com um oponente desconhecido.</li>
-            </ul>
-            <p>
-                Conclusão: Antes de ser emboscado e executado pelo trio, a vítima sobreviveu a um confronto devastador anterior. Alguém — ou alguma coisa — arrancou e roubou as suas partes corporais como troféus durante a luta, deixando o indivíduo gravemente ferido e vulnerável à finalização de Aka, Naris e Koi.
-            </p>
-
-            <div class="signature-area">
-                <div class="signature-box">
-                    <svg viewBox="0 0 200 50" style="width: 150px; height: 50px; stroke: #1a1a1a; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; transform: translateY(15px); margin-bottom: -15px;">
-                        <path d="M10,40 Q30,10 40,30 T60,20 T80,40 Q100,-10 120,30 T150,20 Q170,40 180,10 M40,30 C50,20 60,40 70,30 M120,30 C130,20 140,40 150,30" />
-                    </svg>
-                    <div class="signature-line"></div>
-                    <strong>Perito Legista: Daniel.R</strong><br>
-                    <span style="font-size: 0.8rem; background-color: #f4f1ea;">Departamento Médico Legal</span>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <button class="download-btn" onclick="gerarPDF()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Salvar Dossiê em PDF
-    </button>
+    <main id="app" class="w-full max-w-sm mx-auto p-5 fade-in">
+        <!-- Conteúdo gerado via JS -->
+    </main>
 
     <script>
-        function gerarPDF() {
-            const elemento = document.getElementById('dossier-content');
-            
-            const opcoes = {
-                margin:       [0, 0, 0, 0],
-                filename:     'Dossie_Morte_Trio_MutilacaoPrevia.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
+        // --- ESTADO DO JOGO ---
+        let state = {
+            mestre: "",
+            palavraSecreta: "",
+            jogadores: [],
+            dadosJogo: [], // Array com { nome, isImpostor }
+            jogadorAtualIndex: 0,
+            ecra: 'mestre' // 'mestre', 'setup_jogadores', 'passar', 'revelar', 'jogo', 'fim'
+        };
 
-            html2pdf().set(opcoes).from(elemento).save();
+        const appElement = document.getElementById('app');
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO ---
+        function render() {
+            appElement.innerHTML = '';
+            appElement.className = "w-full max-w-sm mx-auto p-5 fade-in"; 
+
+            switch (state.ecra) {
+                case 'mestre': renderMestreScreen(); break;
+                case 'setup_jogadores': renderSetupJogadoresScreen(); break;
+                case 'passar': renderPassarScreen(); break;
+                case 'revelar': renderRevelarScreen(); break;
+                case 'jogo': renderJogoScreen(); break;
+                case 'fim': renderFimScreen(); break;
+            }
         }
-    </script>
 
+        // ECRA 1: DEFINIR MESTRE E PALAVRA
+        function renderMestreScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-1">IMPOSTOR</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">por Daniel Ruas</p>
+                </div>
+                
+                <div class="bg-gray-800/50 p-6 rounded-2xl cyber-border backdrop-blur-sm mb-6">
+                    <h2 class="text-lg font-semibold mb-4 text-blue-300">A vez do Mestre</h2>
+                    <p class="text-sm text-gray-400 mb-5">O Mestre escolhe a palavra e gere o jogo, não participa nas respostas.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Nome do Mestre</label>
+                            <input type="text" id="mestreName" placeholder="Ex: João..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Palavra Secreta</label>
+                            <input type="password" id="palavraInput" placeholder="Digite a palavra sem ninguém ver..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                            <div class="flex items-center mt-2 ml-1">
+                                <input type="checkbox" id="showWord" class="mr-2 accent-emerald-500" onchange="togglePassword()">
+                                <label for="showWord" class="text-xs text-gray-400">Mostrar palavra</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="salvarMestre()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-95 text-lg">
+                    Continuar
+                </button>
+            `;
+        }
+
+        // ECRA 2: ADICIONAR JOGADORES
+        function renderSetupJogadoresScreen() {
+            let html = `
+                <div class="text-center mb-6">
+                    <p class="text-sm text-gray-400">Mestre: <span class="font-bold text-blue-400">${state.mestre}</span></p>
+                    <h2 class="text-2xl font-bold mt-2">Adicionar Jogadores</h2>
+                </div>
+                
+                <div class="bg-gray-800/50 p-5 rounded-2xl cyber-border mb-6">
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="playerName" placeholder="Nome do jogador..." 
+                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                            onkeypress="if(event.key === 'Enter') addPlayer()">
+                        <button onclick="addPlayer()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-xl font-bold text-xl transition-colors">
+                            +
+                        </button>
+                    </div>
+                    
+                    <ul id="playersList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            `;
+
+            if (state.jogadores.length === 0) {
+                html += `<li class="text-gray-500 text-sm text-center py-4">Adicione pelo menos 3 jogadores.</li>`;
+            } else {
+                state.jogadores.forEach((player, index) => {
+                    html += `
+                        <li class="flex justify-between items-center bg-gray-700/50 px-4 py-3 rounded-xl border border-gray-600/50">
+                            <span class="font-medium">${player}</span>
+                            <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 font-bold p-1 text-lg leading-none">&times;</button>
+                        </li>
+                    `;
+                });
+            }
+
+            html += `
+                    </ul>
+                </div>
+                
+                <button onclick="iniciarSorteio()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 text-lg flex justify-center items-center gap-2">
+                    Distribuir Palavras
+                </button>
+                <button onclick="state.ecra='mestre'; render();" class="w-full mt-3 text-gray-500 text-sm py-2 underline hover:text-gray-300">
+                    Voltar para o Mestre
+                </button>
+            `;
+            appElement.innerHTML = html;
+        }
+
+        // ECRA 3: PASSAR TELEMÓVEL
+        function renderPassarScreen() {
+            const nomeAtual = state.dadosJogo[state.jogadorAtualIndex].nome;
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl cyber-border mt-10">
+                    <div class="text-6xl mb-6 animate-bounce">📱</div>
+                    <h2 class="text-xl font-medium mb-1 text-gray-400">Passe o telemóvel para</h2>
+                    <h1 class="text-4xl font-black text-white mb-8 tracking-wide">${nomeAtual}</h1>
+                    
+                    <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-8">
+                        <p class="text-amber-400/80 text-sm font-medium">⚠️ Certifique-se de que ninguém está a olhar para o seu ecrã!</p>
+                    </div>
+                    
+                    <button onclick="state.ecra='revelar'; render();" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Mostrar minha palavra
+                    </button>
+                </div>
+            `;
+        }
+
+        // ECRA 4: REVELAR
+        function renderRevelarScreen() {
+            const jogadorData = state.dadosJogo[state.jogadorAtualIndex];
+            
+            let htmlConteudo = '';
+            
+            if (jogadorData.isImpostor) {
+                htmlConteudo = `
+                    <div class="text-center bg-red-950/40 p-8 rounded-3xl impostor-border mt-10">
+                        <div class="text-6xl mb-4">🤫</div>
+                        <h2 class="text-xl text-red-300/80 font-medium tracking-widest uppercase mb-2">Você é o</h2>
+                        <h1 class="text-4xl font-black text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">IMPOSTOR</h1>
+                        <p class="text-gray-300 text-sm leading-relaxed">Não deixe que descubram. Preste atenção nas palavras dos outros para tentar adivinhar a palavra secreta!</p>
+                    </div>
+                `;
+            } else {
+                htmlConteudo = `
+                    <div class="text-center bg-blue-950/40 p-8 rounded-3xl cyber-border mt-10">
+                        <div class="text-sm text-blue-300/80 uppercase tracking-widest mb-2 font-medium">A Palavra Secreta é</div>
+                        <h1 class="text-4xl font-black text-white mb-8 tracking-wider bg-gray-900 py-4 rounded-xl border border-blue-500/30 shadow-inner">${state.palavraSecreta}</h1>
+                        <p class="text-gray-300 text-sm">Memorize a palavra. Tente descobrir quem é o impostor fazendo perguntas aos outros.</p>
+                    </div>
+                `;
+            }
+
+            appElement.innerHTML = `
+                ${htmlConteudo}
+                <div class="mt-8">
+                    <button onclick="proximoTurno()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Esconder e Continuar
+                    </button>
+                </div>
+            `;
+        }
+
+        // ECRA 5: MESTRE CONTROLA O JOGO
+        function renderJogoScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-sm text-gray-400 uppercase tracking-widest mb-1">Em Andamento</h2>
+                    <h1 class="text-2xl font-bold text-blue-400">Descubram o Impostor!</h1>
+                </div>
+
+                <div class="bg-gray-800/50 p-6 rounded-3xl cyber-border text-center mb-8">
+                    <p class="text-gray-400 mb-2 text-sm">O Mestre (<span class="text-white font-medium">${state.mestre}</span>) controla esta fase.</p>
+                    <div class="my-6">
+                        <p class="text-xs text-gray-500 mb-1">Palavra desta rodada:</p>
+                        <button onclick="alert('Palavra Secreta: ${state.palavraSecreta}')" class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg text-sm hover:bg-emerald-500/20 transition">
+                            👁️ Lembrar Mestre da Palavra
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-300">Façam perguntas à vez. Quando o grupo decidir quem é o impostor, o Mestre encerra o jogo.</p>
+                </div>
+
+                <button onclick="state.ecra='fim'; render();" class="w-full bg-red-600/90 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all active:scale-95 text-lg">
+                    Encerrar e Revelar Todos
+                </button>
+            `;
+        }
+
+        // ECRA 6: FIM
+        function renderFimScreen() {
+            const impostores = state.dadosJogo.filter(j => j.isImpostor).map(j => j.nome).join(' e ');
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl border border-gray-700 mt-6 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-red-500/5"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-lg text-gray-400 mb-2 uppercase tracking-widest font-semibold">Os Impostores eram</h2>
+                        <h1 class="text-3xl font-black text-red-500 mb-6 drop-shadow-md">${impostores}</h1>
+                        
+                        <div class="w-16 h-px bg-gray-600 mx-auto my-6"></div>
+                        
+                        <h2 class="text-sm text-gray-400 mb-2">A Palavra era</h2>
+                        <h3 class="text-2xl font-bold text-white bg-gray-900 inline-block px-6 py-2 rounded-xl border border-gray-700">${state.palavraSecreta}</h3>
+                    </div>
+                </div>
+                
+                <div class="mt-8 space-y-3">
+                    <button onclick="resetarRodada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
+                        Nova Palavra (Mesmo Mestre/Jogadores)
+                    </button>
+                    <button onclick="resetTotal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
+                        Mudar Tudo (Novo Mestre)
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- LÓGICA DO JOGO ---
+
+        function togglePassword() {
+            const input = document.getElementById('palavraInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function salvarMestre() {
+            const mestreInput = document.getElementById('mestreName').value.trim();
+            const palavraInput = document.getElementById('palavraInput').value.trim();
+
+            if (!mestreInput) {
+                alert("O Mestre precisa de um nome!");
+                return;
+            }
+            if (!palavraInput) {
+                alert("Precisas de escrever uma Palavra Secreta!");
+                return;
+            }
+
+            state.mestre = mestreInput;
+            state.palavraSecreta = palavraInput.toUpperCase();
+            state.ecra = 'setup_jogadores';
+            render();
+        }
+
+        function addPlayer() {
+            const input = document.getElementById('playerName');
+            const name = input.value.trim();
+            if (name && !state.jogadores.includes(name) && name.toLowerCase() !== state.mestre.toLowerCase()) {
+                state.jogadores.push(name);
+                input.value = '';
+                render();
+            } else if (name.toLowerCase() === state.mestre.toLowerCase()) {
+                alert("O Mestre não pode ser um jogador nesta rodada!");
+            }
+        }
+
+        function removePlayer(index) {
+            state.jogadores.splice(index, 1);
+            render();
+        }
+
+        function iniciarSorteio() {
+            if (state.jogadores.length < 3) {
+                alert("É preciso pelo menos 3 jogadores (além do Mestre)!");
+                return;
+            }
+
+            // Decidir quantidade de impostores: 1 (sempre) ou 2 (50% de probabilidade se houver 5+ jogadores)
+            let qtImpostores = 1;
+            if (state.jogadores.length >= 5 && Math.random() > 0.5) {
+                qtImpostores = 2;
+            }
+
+            // Sorteio
+            let indicesImpostores = [];
+            while(indicesImpostores.length < qtImpostores) {
+                let randomIdx = Math.floor(Math.random() * state.jogadores.length);
+                if(!indicesImpostores.includes(randomIdx)){
+                    indicesImpostores.push(randomIdx);
+                }
+            }
+
+            state.dadosJogo = state.jogadores.map((nome, index) => {
+                return {
+                    nome: nome,
+                    isImpostor: indicesImpostores.includes(index)
+                };
+            });
+
+            state.jogadorAtualIndex = 0;
+            state.ecra = 'passar';
+            render();
+        }
+
+        function proximoTurno() {
+            state.jogadorAtualIndex++;
+            if (state.jogadorAtualIndex >= state.dadosJogo.length) {
+                // Todos viram
+                state.ecra = 'jogo';
+            } else {
+                state.ecra = 'passar';
+            }
+            render();
+        }
+
+        function resetarRodada() {
+            state.palavraSecreta = "";
+            state.ecra = 'mestre'; // Volta a pedir palavra
+            render();
+        }
+
+        function resetTotal() {
+            state = {
+                mestre: "",
+                palavraSecreta: "",
+                jogadores: [],
+                dadosJogo: [],
+                jogadorAtualIndex: 0,
+                ecra: 'mestre'
+            };
+            render();
+        }
+
+        // Init
+        render();
+    </script>
 </body>
 </html>
+
 
