@@ -1,762 +1,380 @@
+```html
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jornal IFNMG - Gestão</title>
-    <!-- Tailwind CSS para estilização rápida -->
+    <title>Jogo do Impostor - por Daniel Ruas</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons para ícones bonitos -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <style>
-        /* Variáveis de tema customizáveis */
-        :root {
-            --primary: #2f8f41; /* Verde IFNMG */
-            --secondary: #cc1d24; /* Vermelho IFNMG */
-            --primary-hover: #246e32;
-        }
-
-        body { font-family: 'Inter', sans-serif; }
-
-        /* Utilitários de cor baseados nas variáveis CSS */
-        .bg-primary { background-color: var(--primary); }
-        .text-primary { color: var(--primary); }
-        .border-primary { border-color: var(--primary); }
-        .bg-secondary { background-color: var(--secondary); }
-        .text-secondary { color: var(--secondary); }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
         
-        .hover-bg-primary:hover { background-color: var(--primary-hover); }
-
-        /* Estilos do Calendário (Google Agenda feel) */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background-color: #e5e7eb;
-            border: 1px solid #e5e7eb;
-        }
-        .calendar-cell {
-            background-color: white;
-            min-height: 120px;
-            padding: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .calendar-day-header {
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            padding: 8px 0;
-            background-color: white;
-        }
-        .event-chip {
-            background-color: var(--primary);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .event-chip:hover { opacity: 0.8; }
-        .today-marker {
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #111827; /* cinza muito escuro */
+            color: #f3f4f6;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Ocultar elementos */
-        .hidden { display: none !important; }
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .cyber-border {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+        }
+        
+        .impostor-border {
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen overflow-hidden flex flex-col">
+<body class="min-h-screen flex flex-col justify-center">
 
-    <!-- TELA DE LOGIN / CADASTRO -->
-    <div id="auth-screen" class="fixed inset-0 bg-gray-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-        <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden my-8">
-            <div class="p-8 text-center bg-primary">
-                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner text-primary">
-                    <i class="ph ph-monitor-play text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-white tracking-widest">JORNAL IFNMG</h1>
-                <p class="text-green-100 text-sm mt-1">Portal da Equipe de Comunicação</p>
-            </div>
-            
-            <div class="p-8">
-                <h2 id="auth-title" class="text-xl font-bold text-gray-800 mb-6 text-center">Faça login para continuar</h2>
-                
-                <form id="auth-form" class="space-y-4">
-                    <div id="register-fields" class="hidden space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                            <input id="auth-name" type="text" class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500" placeholder="Seu nome">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sua Função / Equipe</label>
-                            <select id="auth-role" class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500 bg-white">
-                                <option value="video">Edição de Vídeo</option>
-                                <option value="midia">Gerenciamento de Mídia</option>
-                                <option value="foto">Fotografia</option>
-                                <option value="entrevista">Entrevista / Reportagem</option>
-                                <option value="redacao">Redação / Roteiro</option>
-                                <option value="coord">Coordenação</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Institucional</label>
-                        <input id="auth-email" required type="email" class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500" placeholder="nome@ifnmg.edu.br">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                        <input id="auth-pass" required type="password" class="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500" placeholder="••••••••">
-                    </div>
-                    
-                    <button type="submit" class="w-full text-white font-bold rounded-lg p-3 mt-4 transition-transform hover:scale-[1.02] bg-primary hover-bg-primary">
-                        <span id="auth-submit-btn">Entrar</span>
-                    </button>
-                </form>
+    <main id="app" class="w-full max-w-sm mx-auto p-5 fade-in">
+        <!-- Conteúdo gerado via JS -->
+    </main>
 
-                <p class="text-center mt-6 text-sm text-gray-600">
-                    <span id="auth-toggle-text">Ainda não faz parte do jornal?</span>
-                    <button id="auth-toggle-btn" class="font-bold ml-1 hover:underline text-secondary">
-                        Cadastre-se
-                    </button>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- APLICATIVO PRINCIPAL (Oculto inicialmente) -->
-    <div id="app-screen" class="hidden flex-1 flex h-full">
-        <!-- Overlay Mobile -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
-
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-white shadow-xl transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-30 flex flex-col">
-            <div class="p-6 flex items-center justify-between bg-primary">
-                <h1 class="text-xl font-bold text-white tracking-wider flex items-center gap-2">
-                    <i class="ph ph-monitor-play text-2xl"></i>
-                    IFNMG
-                </h1>
-                <button id="close-sidebar" class="md:hidden text-white text-2xl">
-                    <i class="ph ph-x"></i>
-                </button>
-            </div>
-            
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto" id="main-nav">
-                <!-- Itens gerados via JS para gerenciar active state -->
-            </nav>
-
-            <div class="p-4 border-t border-gray-100">
-                <button onclick="switchView('settings')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="ph ph-gear text-xl"></i> Configurações
-                </button>
-                <button id="logout-btn" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-2 font-medium">
-                    <i class="ph ph-sign-out text-xl"></i> Sair
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-screen overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-8 z-10 flex-shrink-0">
-                <button id="open-sidebar" class="md:hidden p-2 text-gray-600 rounded-lg hover:bg-gray-100 text-2xl">
-                    <i class="ph ph-list"></i>
-                </button>
-                
-                <div class="flex items-center gap-4 bg-gray-100 px-4 py-2 rounded-full w-full max-w-md hidden sm:flex ml-4">
-                    <i class="ph ph-magnifying-glass text-gray-400"></i>
-                    <input type="text" placeholder="Pesquisar..." class="bg-transparent border-none outline-none w-full text-sm">
-                </div>
-
-                <div class="flex items-center gap-4 ml-auto">
-                    <button class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors text-xl">
-                        <i class="ph ph-bell"></i>
-                        <span class="absolute top-1 right-2 w-2.5 h-2.5 rounded-full bg-secondary"></span>
-                    </button>
-                    <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
-                        <div id="user-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm bg-primary uppercase">
-                            A
-                        </div>
-                        <div class="hidden sm:block">
-                            <p id="user-name-display" class="text-sm font-semibold">Aluno</p>
-                            <p id="user-role-display" class="text-xs text-gray-500 capitalize">Membro</p>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Telas do Sistema -->
-            <div class="flex-1 overflow-auto bg-gray-50 p-4 lg:p-6" id="views-container">
-                
-                <!-- VIEW: AGENDA (Estilo Google Calendar) -->
-                <div id="view-calendar" class="view-section h-full flex flex-col">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                        <div class="flex items-center gap-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Agenda do Jornal</h2>
-                            <div class="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-                                <button onclick="changeMonth(-1)" class="p-1 hover:bg-gray-100 rounded text-gray-600"><i class="ph ph-caret-left"></i></button>
-                                <span id="current-month-display" class="font-semibold text-sm min-w-[120px] text-center capitalize">Março 2026</span>
-                                <button onclick="changeMonth(1)" class="p-1 hover:bg-gray-100 rounded text-gray-600"><i class="ph ph-caret-right"></i></button>
-                            </div>
-                        </div>
-                        <button onclick="openModal('event-modal')" class="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm hover:opacity-90 font-medium bg-primary">
-                            <i class="ph ph-plus text-lg"></i>
-                            <span>Criar Evento</span>
-                        </button>
-                    </div>
-
-                    <!-- Grid do Calendário -->
-                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col min-h-[500px]">
-                        <div class="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
-                            <div class="calendar-day-header">Dom</div>
-                            <div class="calendar-day-header">Seg</div>
-                            <div class="calendar-day-header">Ter</div>
-                            <div class="calendar-day-header">Qua</div>
-                            <div class="calendar-day-header">Qui</div>
-                            <div class="calendar-day-header">Sex</div>
-                            <div class="calendar-day-header">Sáb</div>
-                        </div>
-                        <div id="calendar-days-container" class="calendar-grid flex-1">
-                            <!-- Dias gerados via JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW: DEMANDAS (Kanban) -->
-                <div id="view-tasks" class="view-section hidden h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Quadro de Demandas</h2>
-                            <p class="text-gray-500 text-sm">Gerencie tarefas das equipes.</p>
-                        </div>
-                        <button onclick="openModal('task-modal')" class="flex items-center gap-2 px-4 py-2 text-white rounded-lg shadow-sm hover:opacity-90 font-medium bg-secondary">
-                            <i class="ph ph-plus text-lg"></i>
-                            <span class="hidden sm:inline">Nova Demanda</span>
-                        </button>
-                    </div>
-
-                    <div class="flex-1 overflow-x-auto pb-4">
-                        <div class="flex gap-6 min-w-max h-full items-start">
-                            <!-- Coluna A Fazer -->
-                            <div class="w-80 bg-gray-100/80 rounded-xl p-4 flex flex-col max-h-full border border-gray-200">
-                                <h3 class="font-bold text-gray-700 mb-4 px-1 flex items-center justify-between">
-                                    <span>A Fazer <span id="count-todo" class="text-gray-400 font-normal ml-1">0</span></span>
-                                    <div class="w-2 h-2 rounded-full bg-red-400"></div>
-                                </h3>
-                                <div id="kanban-todo" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
-                            </div>
-                            <!-- Coluna Em Andamento -->
-                            <div class="w-80 bg-gray-100/80 rounded-xl p-4 flex flex-col max-h-full border border-gray-200">
-                                <h3 class="font-bold text-gray-700 mb-4 px-1 flex items-center justify-between">
-                                    <span>Em Andamento <span id="count-doing" class="text-gray-400 font-normal ml-1">0</span></span>
-                                    <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
-                                </h3>
-                                <div id="kanban-doing" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
-                            </div>
-                            <!-- Coluna Concluído -->
-                            <div class="w-80 bg-gray-100/80 rounded-xl p-4 flex flex-col max-h-full border border-gray-200">
-                                <h3 class="font-bold text-gray-700 mb-4 px-1 flex items-center justify-between">
-                                    <span>Concluído <span id="count-done" class="text-gray-400 font-normal ml-1">0</span></span>
-                                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                </h3>
-                                <div id="kanban-done" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW: EQUIPE -->
-                <div id="view-team" class="view-section hidden max-w-4xl">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Membros da Equipe</h2>
-                            <p class="text-gray-500">Contatos e funções no jornal.</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-sm">
-                                    <th class="p-4 font-medium">Nome</th>
-                                    <th class="p-4 font-medium">Equipe/Função</th>
-                                    <th class="p-4 font-medium hidden sm:table-cell">Email</th>
-                                </tr>
-                            </thead>
-                            <tbody id="team-list" class="divide-y divide-gray-100">
-                                <!-- Gerado via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- VIEW: CONFIGURAÇÕES -->
-                <div id="view-settings" class="view-section hidden max-w-2xl">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Configurações</h2>
-                    <p class="text-gray-500 mb-6">Personalize as cores do sistema.</p>
-                    
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
-                        <h3 class="font-semibold text-lg border-b pb-2">Identidade Visual</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Cor Primária (Padrão: Verde IFNMG)</label>
-                                <div class="flex items-center gap-3">
-                                    <input type="color" id="theme-primary" class="w-12 h-12 rounded cursor-pointer border-0 p-0">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Cor Secundária (Padrão: Vermelho IFNMG)</label>
-                                <div class="flex items-center gap-3">
-                                    <input type="color" id="theme-secondary" class="w-12 h-12 rounded cursor-pointer border-0 p-0">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="pt-4 flex justify-end">
-                            <button onclick="saveTheme()" class="px-6 py-2 text-white rounded-lg font-medium shadow-sm hover:opacity-90 bg-primary">
-                                Salvar Alterações
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </main>
-    </div>
-
-    <!-- MODAIS -->
-
-    <!-- Modal Novo Evento -->
-    <div id="event-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-            <h3 class="text-xl font-bold mb-4">Agendar Evento no Calendário</h3>
-            <form id="form-event" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título do Evento</label>
-                    <input id="ev-title" required type="text" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                    <input id="ev-date" required type="date" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-green-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição / Local</label>
-                    <textarea id="ev-desc" required rows="2" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-green-500"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Equipes Necessárias (Selecionar)</label>
-                    <div id="ev-teams-container" class="flex flex-wrap gap-2">
-                        <!-- Checkboxes gerados no JS -->
-                    </div>
-                </div>
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="closeModal('event-modal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 text-white rounded-lg font-medium bg-primary">Salvar Evento</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Nova Demanda -->
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
-            <h3 class="text-xl font-bold mb-4">Criar Nova Demanda</h3>
-            <form id="form-task" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                    <input id="tk-title" required type="text" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Instruções</label>
-                    <textarea id="tk-desc" required rows="3" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Equipe Responsável</label>
-                    <select id="tk-team" class="w-full border border-gray-300 rounded-lg p-2.5 outline-none bg-white">
-                        <option value="video">Edição de Vídeo</option>
-                        <option value="midia">Gerenciamento de Mídia</option>
-                        <option value="foto">Fotografia</option>
-                        <option value="entrevista">Entrevista / Reportagem</option>
-                        <option value="redacao">Redação / Roteiro</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" onclick="closeModal('task-modal')" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 text-white rounded-lg font-medium bg-secondary">Criar Demanda</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT -->
     <script>
-        // --- ESTADO DA APLICAÇÃO ---
-        const TEAMS = {
-            'video': { name: 'Edição de Vídeo', icon: 'ph-video-camera' },
-            'midia': { name: 'Mídia Social', icon: 'ph-instagram-logo' },
-            'foto': { name: 'Fotografia', icon: 'ph-camera' },
-            'entrevista': { name: 'Entrevista', icon: 'ph-microphone' },
-            'redacao': { name: 'Redação', icon: 'ph-pencil-simple' },
-            'coord': { name: 'Coordenação', icon: 'ph-users' }
-        };
-
+        // --- ESTADO DO JOGO ---
         let state = {
-            user: null,
-            theme: { primary: '#2f8f41', secondary: '#cc1d24' },
-            currentDate: new Date(), // Para o calendário
-            events: [
-                { id: 1, title: 'Feira de Ciências', date: '2026-03-25', description: 'Cobertura apresentações.', teams: ['foto', 'redacao'] },
-                { id: 2, title: 'Palestra IA', date: '2026-03-28', description: 'Gravar palestra.', teams: ['video', 'entrevista'] },
-                { id: 3, title: 'Reunião de Pauta', date: '2026-03-05', description: 'Definir posts da semana.', teams: ['coord', 'midia'] }
-            ],
-            tasks: [
-                { id: 1, title: 'Editar teaser da Feira', description: 'Vídeo 30s Instagram.', team: 'video', status: 'todo' },
-                { id: 2, title: 'Agendar posts', description: 'Cronograma semanal.', team: 'midia', status: 'doing' },
-                { id: 3, title: 'Artigo Gincana', description: 'Texto 500 pal.', team: 'redacao', status: 'done' }
-            ],
-            members: [
-                { name: 'Ana Silva', role: 'Redação', email: 'ana@ifnmg.edu.br', team: 'redacao' },
-                { name: 'Carlos Santos', role: 'Fotografia', email: 'carlos@ifnmg.edu.br', team: 'foto' },
-                { name: 'João Oliveira', role: 'Edição de Vídeo', email: 'joao@ifnmg.edu.br', team: 'video' }
-            ]
+            mestre: "",
+            palavraSecreta: "",
+            jogadores: [],
+            dadosJogo: [], // Array com { nome, isImpostor }
+            jogadorAtualIndex: 0,
+            ecra: 'mestre' // 'mestre', 'setup_jogadores', 'passar', 'revelar', 'jogo', 'fim'
         };
 
-        // --- SISTEMA DE NAVEGAÇÃO ---
-        const navItems = [
-            { id: 'calendar', label: 'Agenda', icon: 'ph-calendar-blank' },
-            { id: 'tasks', label: 'Demandas', icon: 'ph-kanban' },
-            { id: 'team', label: 'Equipe', icon: 'ph-users' }
-        ];
+        const appElement = document.getElementById('app');
 
-        function renderNav() {
-            const nav = document.getElementById('main-nav');
-            nav.innerHTML = navItems.map(item => `
-                <button onclick="switchView('${item.id}')" id="nav-${item.id}" 
-                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-600 hover:bg-gray-50">
-                    <i class="ph ${item.icon} text-xl"></i> ${item.label}
+        // --- FUNÇÕES DE RENDERIZAÇÃO ---
+        function render() {
+            appElement.innerHTML = '';
+            appElement.className = "w-full max-w-sm mx-auto p-5 fade-in"; 
+
+            switch (state.ecra) {
+                case 'mestre': renderMestreScreen(); break;
+                case 'setup_jogadores': renderSetupJogadoresScreen(); break;
+                case 'passar': renderPassarScreen(); break;
+                case 'revelar': renderRevelarScreen(); break;
+                case 'jogo': renderJogoScreen(); break;
+                case 'fim': renderFimScreen(); break;
+            }
+        }
+
+        // ECRA 1: DEFINIR MESTRE E PALAVRA
+        function renderMestreScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-1">IMPOSTOR</h1>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">por Daniel Ruas</p>
+                </div>
+                
+                <div class="bg-gray-800/50 p-6 rounded-2xl cyber-border backdrop-blur-sm mb-6">
+                    <h2 class="text-lg font-semibold mb-4 text-blue-300">A vez do Mestre</h2>
+                    <p class="text-sm text-gray-400 mb-5">O Mestre escolhe a palavra e gere o jogo, não participa nas respostas.</p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Nome do Mestre</label>
+                            <input type="text" id="mestreName" placeholder="Ex: João..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1 ml-1">Palavra Secreta</label>
+                            <input type="password" id="palavraInput" placeholder="Digite a palavra sem ninguém ver..." 
+                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
+                            <div class="flex items-center mt-2 ml-1">
+                                <input type="checkbox" id="showWord" class="mr-2 accent-emerald-500" onchange="togglePassword()">
+                                <label for="showWord" class="text-xs text-gray-400">Mostrar palavra</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="salvarMestre()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-95 text-lg">
+                    Continuar
                 </button>
-            `).join('');
+            `;
         }
 
-        function switchView(viewId) {
-            // Esconde todas as views
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            // Mostra a selecionada
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            
-            // Atualiza botões do menu
-            navItems.forEach(item => {
-                const btn = document.getElementById(`nav-${item.id}`);
-                if(btn) {
-                    if(item.id === viewId) {
-                        btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium bg-green-50 text-primary";
-                    } else {
-                        btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900";
-                    }
-                }
-            });
+        // ECRA 2: ADICIONAR JOGADORES
+        function renderSetupJogadoresScreen() {
+            let html = `
+                <div class="text-center mb-6">
+                    <p class="text-sm text-gray-400">Mestre: <span class="font-bold text-blue-400">${state.mestre}</span></p>
+                    <h2 class="text-2xl font-bold mt-2">Adicionar Jogadores</h2>
+                </div>
+                
+                <div class="bg-gray-800/50 p-5 rounded-2xl cyber-border mb-6">
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="playerName" placeholder="Nome do jogador..." 
+                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                            onkeypress="if(event.key === 'Enter') addPlayer()">
+                        <button onclick="addPlayer()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-xl font-bold text-xl transition-colors">
+                            +
+                        </button>
+                    </div>
+                    
+                    <ul id="playersList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            `;
 
-            // Fecha sidebar no mobile
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
-
-            // Renderiza dados específicos da view
-            if(viewId === 'calendar') renderCalendar();
-            if(viewId === 'tasks') renderTasks();
-            if(viewId === 'team') renderTeam();
-        }
-
-        // --- CALENDÁRIO (GOOGLE AGENDA STYLE) ---
-        function renderCalendar() {
-            const container = document.getElementById('calendar-days-container');
-            const monthDisplay = document.getElementById('current-month-display');
-            
-            const year = state.currentDate.getFullYear();
-            const month = state.currentDate.getMonth();
-            const today = new Date();
-
-            // Atualiza o texto do mês
-            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            monthDisplay.textContent = `${monthNames[month]} ${year}`;
-
-            // Calculando os dias
-            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 (Dom) a 6 (Sab)
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            let html = '';
-
-            // Células vazias antes do primeiro dia
-            for (let i = 0; i < firstDayOfMonth; i++) {
-                html += `<div class="calendar-cell bg-gray-50"></div>`;
+            if (state.jogadores.length === 0) {
+                html += `<li class="text-gray-500 text-sm text-center py-4">Adicione pelo menos 3 jogadores.</li>`;
+            } else {
+                state.jogadores.forEach((player, index) => {
+                    html += `
+                        <li class="flex justify-between items-center bg-gray-700/50 px-4 py-3 rounded-xl border border-gray-600/50">
+                            <span class="font-medium">${player}</span>
+                            <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 font-bold p-1 text-lg leading-none">&times;</button>
+                        </li>
+                    `;
+                });
             }
 
-            // Dias do mês
-            for (let day = 1; day <= daysInMonth; day++) {
-                const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            html += `
+                    </ul>
+                </div>
                 
-                // Encontrar eventos deste dia
-                const dayEvents = state.events.filter(e => e.date === currentDateStr);
-                
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                const dayClass = isToday ? 'today-marker' : 'text-gray-700 font-medium';
+                <button onclick="iniciarSorteio()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 text-lg flex justify-center items-center gap-2">
+                    Distribuir Palavras
+                </button>
+                <button onclick="state.ecra='mestre'; render();" class="w-full mt-3 text-gray-500 text-sm py-2 underline hover:text-gray-300">
+                    Voltar para o Mestre
+                </button>
+            `;
+            appElement.innerHTML = html;
+        }
 
-                let eventsHtml = dayEvents.map(ev => `
-                    <div class="event-chip" onclick="alert('Evento: ${ev.title}\\n\\n${ev.description}')">
-                        ${ev.title}
+        // ECRA 3: PASSAR TELEMÓVEL
+        function renderPassarScreen() {
+            const nomeAtual = state.dadosJogo[state.jogadorAtualIndex].nome;
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl cyber-border mt-10">
+                    <div class="text-6xl mb-6 animate-bounce">📱</div>
+                    <h2 class="text-xl font-medium mb-1 text-gray-400">Passe o telemóvel para</h2>
+                    <h1 class="text-4xl font-black text-white mb-8 tracking-wide">${nomeAtual}</h1>
+                    
+                    <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-8">
+                        <p class="text-amber-400/80 text-sm font-medium">⚠️ Certifique-se de que ninguém está a olhar para o seu ecrã!</p>
                     </div>
-                `).join('');
+                    
+                    <button onclick="state.ecra='revelar'; render();" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Mostrar minha palavra
+                    </button>
+                </div>
+            `;
+        }
 
-                html += `
-                    <div class="calendar-cell border-t border-r border-gray-100 relative group">
-                        <div class="text-right p-1">
-                            <span class="${dayClass} text-sm px-1">${day}</span>
-                        </div>
-                        <div class="flex-1 overflow-y-auto space-y-1 mt-1">
-                            ${eventsHtml}
-                        </div>
+        // ECRA 4: REVELAR
+        function renderRevelarScreen() {
+            const jogadorData = state.dadosJogo[state.jogadorAtualIndex];
+            
+            let htmlConteudo = '';
+            
+            if (jogadorData.isImpostor) {
+                htmlConteudo = `
+                    <div class="text-center bg-red-950/40 p-8 rounded-3xl impostor-border mt-10">
+                        <div class="text-6xl mb-4">🤫</div>
+                        <h2 class="text-xl text-red-300/80 font-medium tracking-widest uppercase mb-2">Você é o</h2>
+                        <h1 class="text-4xl font-black text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">IMPOSTOR</h1>
+                        <p class="text-gray-300 text-sm leading-relaxed">Não deixe que descubram. Preste atenção nas palavras dos outros para tentar adivinhar a palavra secreta!</p>
+                    </div>
+                `;
+            } else {
+                htmlConteudo = `
+                    <div class="text-center bg-blue-950/40 p-8 rounded-3xl cyber-border mt-10">
+                        <div class="text-sm text-blue-300/80 uppercase tracking-widest mb-2 font-medium">A Palavra Secreta é</div>
+                        <h1 class="text-4xl font-black text-white mb-8 tracking-wider bg-gray-900 py-4 rounded-xl border border-blue-500/30 shadow-inner">${state.palavraSecreta}</h1>
+                        <p class="text-gray-300 text-sm">Memorize a palavra. Tente descobrir quem é o impostor fazendo perguntas aos outros.</p>
                     </div>
                 `;
             }
 
-            // Preencher o restante do grid se necessário (para manter alinhado)
-            const totalCells = firstDayOfMonth + daysInMonth;
-            const remaining = (7 - (totalCells % 7)) % 7;
-            for (let i = 0; i < remaining; i++) {
-                html += `<div class="calendar-cell bg-gray-50 border-t border-gray-100"></div>`;
-            }
-
-            container.innerHTML = html;
+            appElement.innerHTML = `
+                ${htmlConteudo}
+                <div class="mt-8">
+                    <button onclick="proximoTurno()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
+                        Esconder e Continuar
+                    </button>
+                </div>
+            `;
         }
 
-        function changeMonth(offset) {
-            state.currentDate.setMonth(state.currentDate.getMonth() + offset);
-            renderCalendar();
+        // ECRA 5: MESTRE CONTROLA O JOGO
+        function renderJogoScreen() {
+            appElement.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-sm text-gray-400 uppercase tracking-widest mb-1">Em Andamento</h2>
+                    <h1 class="text-2xl font-bold text-blue-400">Descubram o Impostor!</h1>
+                </div>
+
+                <div class="bg-gray-800/50 p-6 rounded-3xl cyber-border text-center mb-8">
+                    <p class="text-gray-400 mb-2 text-sm">O Mestre (<span class="text-white font-medium">${state.mestre}</span>) controla esta fase.</p>
+                    <div class="my-6">
+                        <p class="text-xs text-gray-500 mb-1">Palavra desta rodada:</p>
+                        <button onclick="alert('Palavra Secreta: ${state.palavraSecreta}')" class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg text-sm hover:bg-emerald-500/20 transition">
+                            👁️ Lembrar Mestre da Palavra
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-300">Façam perguntas à vez. Quando o grupo decidir quem é o impostor, o Mestre encerra o jogo.</p>
+                </div>
+
+                <button onclick="state.ecra='fim'; render();" class="w-full bg-red-600/90 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all active:scale-95 text-lg">
+                    Encerrar e Revelar Todos
+                </button>
+            `;
         }
 
-        // --- DEMANDAS (KANBAN) ---
-        function renderTasks() {
-            ['todo', 'doing', 'done'].forEach(status => {
-                const container = document.getElementById(`kanban-${status}`);
-                const tasks = state.tasks.filter(t => t.status === status);
-                document.getElementById(`count-${status}`).textContent = tasks.length;
+        // ECRA 6: FIM
+        function renderFimScreen() {
+            const impostores = state.dadosJogo.filter(j => j.isImpostor).map(j => j.nome).join(' e ');
+
+            appElement.innerHTML = `
+                <div class="text-center bg-gray-800/80 p-8 rounded-3xl border border-gray-700 mt-6 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-red-500/5"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-lg text-gray-400 mb-2 uppercase tracking-widest font-semibold">Os Impostores eram</h2>
+                        <h1 class="text-3xl font-black text-red-500 mb-6 drop-shadow-md">${impostores}</h1>
+                        
+                        <div class="w-16 h-px bg-gray-600 mx-auto my-6"></div>
+                        
+                        <h2 class="text-sm text-gray-400 mb-2">A Palavra era</h2>
+                        <h3 class="text-2xl font-bold text-white bg-gray-900 inline-block px-6 py-2 rounded-xl border border-gray-700">${state.palavraSecreta}</h3>
+                    </div>
+                </div>
                 
-                container.innerHTML = tasks.map(task => {
-                    const teamInfo = TEAMS[task.team] || { name: 'Geral', icon: 'ph-users' };
-                    return `
-                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-gray-300 transition-colors group">
-                            <div class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-secondary mb-2">
-                                <i class="ph ${teamInfo.icon}"></i> ${teamInfo.name}
-                            </div>
-                            <h4 class="font-semibold text-gray-800 mb-1 text-sm">${task.title}</h4>
-                            <p class="text-xs text-gray-500 mb-4 line-clamp-2">${task.description}</p>
-                            
-                            <div class="flex justify-between items-center mt-auto border-t border-gray-50 pt-2">
-                                <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 w-full justify-end">
-                                    ${status !== 'todo' ? `<button onclick="moveTask(${task.id}, '${status === 'done' ? 'doing' : 'todo'}')" class="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="ph ph-arrow-left"></i></button>` : ''}
-                                    ${status !== 'done' ? `<button onclick="moveTask(${task.id}, '${status === 'todo' ? 'doing' : 'done'}')" class="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200"><i class="ph ph-arrow-right"></i></button>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                <div class="mt-8 space-y-3">
+                    <button onclick="resetarRodada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
+                        Nova Palavra (Mesmo Mestre/Jogadores)
+                    </button>
+                    <button onclick="resetTotal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
+                        Mudar Tudo (Novo Mestre)
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- LÓGICA DO JOGO ---
+
+        function togglePassword() {
+            const input = document.getElementById('palavraInput');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function salvarMestre() {
+            const mestreInput = document.getElementById('mestreName').value.trim();
+            const palavraInput = document.getElementById('palavraInput').value.trim();
+
+            if (!mestreInput) {
+                alert("O Mestre precisa de um nome!");
+                return;
+            }
+            if (!palavraInput) {
+                alert("Precisas de escrever uma Palavra Secreta!");
+                return;
+            }
+
+            state.mestre = mestreInput;
+            state.palavraSecreta = palavraInput.toUpperCase();
+            state.ecra = 'setup_jogadores';
+            render();
+        }
+
+        function addPlayer() {
+            const input = document.getElementById('playerName');
+            const name = input.value.trim();
+            if (name && !state.jogadores.includes(name) && name.toLowerCase() !== state.mestre.toLowerCase()) {
+                state.jogadores.push(name);
+                input.value = '';
+                render();
+            } else if (name.toLowerCase() === state.mestre.toLowerCase()) {
+                alert("O Mestre não pode ser um jogador nesta rodada!");
+            }
+        }
+
+        function removePlayer(index) {
+            state.jogadores.splice(index, 1);
+            render();
+        }
+
+        function iniciarSorteio() {
+            if (state.jogadores.length < 3) {
+                alert("É preciso pelo menos 3 jogadores (além do Mestre)!");
+                return;
+            }
+
+            // Decidir quantidade de impostores: 1 (sempre) ou 2 (50% de probabilidade se houver 5+ jogadores)
+            let qtImpostores = 1;
+            if (state.jogadores.length >= 5 && Math.random() > 0.5) {
+                qtImpostores = 2;
+            }
+
+            // Sorteio
+            let indicesImpostores = [];
+            while(indicesImpostores.length < qtImpostores) {
+                let randomIdx = Math.floor(Math.random() * state.jogadores.length);
+                if(!indicesImpostores.includes(randomIdx)){
+                    indicesImpostores.push(randomIdx);
+                }
+            }
+
+            state.dadosJogo = state.jogadores.map((nome, index) => {
+                return {
+                    nome: nome,
+                    isImpostor: indicesImpostores.includes(index)
+                };
             });
+
+            state.jogadorAtualIndex = 0;
+            state.ecra = 'passar';
+            render();
         }
 
-        function moveTask(taskId, newStatus) {
-            const task = state.tasks.find(t => t.id === taskId);
-            if(task) {
-                task.status = newStatus;
-                renderTasks();
+        function proximoTurno() {
+            state.jogadorAtualIndex++;
+            if (state.jogadorAtualIndex >= state.dadosJogo.length) {
+                // Todos viram
+                state.ecra = 'jogo';
+            } else {
+                state.ecra = 'passar';
             }
+            render();
         }
 
-        // --- EQUIPE ---
-        function renderTeam() {
-            const container = document.getElementById('team-list');
-            container.innerHTML = state.members.map(member => {
-                const teamInfo = TEAMS[member.team] || { name: 'Membro', icon: 'ph-user' };
-                return `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs bg-primary">
-                                ${member.name.charAt(0)}
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-800 text-sm">${member.name}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-4">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 border border-gray-200 rounded-md text-xs text-gray-700">
-                            <i class="ph ${teamInfo.icon}"></i> ${teamInfo.name}
-                        </span>
-                    </td>
-                    <td class="p-4 text-sm text-gray-500 hidden sm:table-cell">${member.email}</td>
-                </tr>
-            `}).join('');
+        function resetarRodada() {
+            state.palavraSecreta = "";
+            state.ecra = 'mestre'; // Volta a pedir palavra
+            render();
         }
 
-        // --- MODAIS ---
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById(id).classList.add('flex');
-            
-            // Popula os checkboxes de times se for modal de evento
-            if(id === 'event-modal') {
-                const container = document.getElementById('ev-teams-container');
-                container.innerHTML = Object.entries(TEAMS).map(([key, val]) => `
-                    <label class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-full text-sm cursor-pointer hover:bg-gray-50 has-[:checked]:bg-green-50 has-[:checked]:border-green-300">
-                        <input type="checkbox" value="${key}" class="hidden team-checkbox">
-                        <i class="ph ${val.icon}"></i> ${val.name}
-                    </label>
-                `).join('');
-            }
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.getElementById(id).classList.remove('flex');
-        }
-
-        // --- LISTENERS DE FORMS ---
-        document.getElementById('form-event').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const checkedBoxes = Array.from(document.querySelectorAll('.team-checkbox:checked')).map(cb => cb.value);
-            const newEvent = {
-                id: Date.now(),
-                title: document.getElementById('ev-title').value,
-                date: document.getElementById('ev-date').value,
-                description: document.getElementById('ev-desc').value,
-                teams: checkedBoxes
+        function resetTotal() {
+            state = {
+                mestre: "",
+                palavraSecreta: "",
+                jogadores: [],
+                dadosJogo: [],
+                jogadorAtualIndex: 0,
+                ecra: 'mestre'
             };
-            state.events.push(newEvent);
-            closeModal('event-modal');
-            this.reset();
-            if(!document.getElementById('view-calendar').classList.contains('hidden')) {
-                renderCalendar();
-            }
-        });
-
-        document.getElementById('form-task').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const newTask = {
-                id: Date.now(),
-                title: document.getElementById('tk-title').value,
-                description: document.getElementById('tk-desc').value,
-                team: document.getElementById('tk-team').value,
-                status: 'todo'
-            };
-            state.tasks.push(newTask);
-            closeModal('task-modal');
-            this.reset();
-            if(!document.getElementById('view-tasks').classList.contains('hidden')) {
-                renderTasks();
-            }
-        });
-
-        // --- SISTEMA DE AUTENTICAÇÃO E INICIALIZAÇÃO ---
-        let isLoginMode = true;
-
-        document.getElementById('auth-toggle-btn').addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').textContent = isLoginMode ? 'Faça login para continuar' : 'Crie sua conta na equipe';
-            document.getElementById('auth-submit-btn').textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
-            document.getElementById('auth-toggle-text').textContent = isLoginMode ? 'Ainda não faz parte do jornal?' : 'Já tem uma conta?';
-            document.getElementById('auth-toggle-btn').textContent = isLoginMode ? 'Cadastre-se' : 'Faça login';
-            
-            const regFields = document.getElementById('register-fields');
-            isLoginMode ? regFields.classList.add('hidden') : regFields.classList.remove('hidden');
-        });
-
-        document.getElementById('auth-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            // Simula login/cadastro
-            const name = isLoginMode ? 'Usuário' : document.getElementById('auth-name').value;
-            const roleKey = isLoginMode ? 'redacao' : document.getElementById('auth-role').value;
-            const roleName = TEAMS[roleKey]?.name || 'Membro';
-
-            state.user = { name: name || 'Aluno', role: roleName };
-            
-            // Se foi cadastro, adiciona à lista de membros (simulação)
-            if(!isLoginMode) {
-                state.members.push({
-                    name: state.user.name,
-                    role: roleName,
-                    email: document.getElementById('auth-email').value,
-                    team: roleKey
-                });
-            }
-
-            document.getElementById('user-name-display').textContent = state.user.name;
-            document.getElementById('user-avatar').textContent = state.user.name.charAt(0);
-            document.getElementById('user-role-display').textContent = state.user.role;
-
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            
-            // Iniciar UI
-            applyTheme();
-            renderNav();
-            switchView('calendar');
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            state.user = null;
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            document.getElementById('auth-form').reset();
-        });
-
-        // --- CONFIGURAÇÕES E TEMA ---
-        function applyTheme() {
-            document.documentElement.style.setProperty('--primary', state.theme.primary);
-            document.documentElement.style.setProperty('--secondary', state.theme.secondary);
-            
-            // Simular um darken na cor primária para o hover
-            document.documentElement.style.setProperty('--primary-hover', state.theme.primary); 
-            
-            document.getElementById('theme-primary').value = state.theme.primary;
-            document.getElementById('theme-secondary').value = state.theme.secondary;
+            render();
         }
 
-        function saveTheme() {
-            state.theme.primary = document.getElementById('theme-primary').value;
-            state.theme.secondary = document.getElementById('theme-secondary').value;
-            applyTheme();
-            alert('Cores atualizadas!');
-        }
-
-        // --- SIDEBAR MOBILE ---
-        document.getElementById('open-sidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.remove('hidden');
-        });
-
-        document.getElementById('close-sidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
-        });
-
-        document.getElementById('sidebar-overlay').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebar-overlay').classList.add('hidden');
-        });
-
+        // Init
+        render();
     </script>
 </body>
 </html>
+
+
+```
