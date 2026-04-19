@@ -1,377 +1,409 @@
 ```html
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo do Impostor - por Daniel Ruas</title>
+    <title>Grande Biblioteca - Conhecimento Ancestral</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Biblioteca para gerar o Print/Imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --parchment: #fde68a;
+            --parchment-dark: #d97706;
+        }
+
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: #111827; /* cinza muito escuro */
-            color: #f3f4f6;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Lora', serif;
         }
 
-        .fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        h1, h2, h3, .font-title {
+            font-family: 'Cinzel', serif;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .cyber-border {
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1c1917; }
+        ::-webkit-scrollbar-thumb { background: #57534e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
         
-        .impostor-border {
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        .bg-library {
+            background-color: #1c1917;
+            background-image: radial-gradient(circle at center, #292524 0%, #1c1917 100%);
+        }
+
+        .bg-scroll {
+            background-color: #fdf6e3;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            color: #3f2c1c;
+            box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.2);
+            border: 2px solid #b8860b;
+        }
+
+        .filter-btn.active {
+            background-color: #b45309; 
+            color: white;
+            border-color: #fbbf24; 
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-center">
+<body class="bg-stone-900 text-stone-200 min-h-screen flex flex-col bg-library">
 
-    <main id="app" class="w-full max-w-sm mx-auto p-5 fade-in">
-        <!-- Conteúdo gerado via JS -->
+    <!-- Navegação / Cabeçalho -->
+    <nav class="bg-stone-950/80 backdrop-blur border-b border-amber-900/50 p-4 sticky top-0 z-40 shadow-2xl">
+        <div class="container mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i data-lucide="library" class="text-amber-500 w-8 h-8"></i>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-amber-500 tracking-widest uppercase">Arquivos de Iwagakure</h1>
+                    <p class="text-xs text-stone-400 font-sans tracking-wide">Enciclopédia de Técnicas e Energias</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="openModal('addModal')" class="bg-stone-800 hover:bg-amber-900/80 text-amber-200 px-4 py-2 rounded flex items-center gap-2 border border-amber-900 transition-colors font-sans text-sm">
+                    <i data-lucide="feather" class="w-4 h-4"></i> <span class="hidden sm:inline">Novo Registro</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Sidebar de Filtros -->
+        <aside class="w-full lg:w-1/4 flex flex-col gap-6">
+            
+            <!-- Busca -->
+            <div class="bg-stone-800/50 border border-stone-700 p-4 rounded-lg shadow-lg">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-3 w-5 h-5 text-stone-400"></i>
+                    <input type="text" id="searchInput" placeholder="Pesquisar..." class="w-full bg-stone-900 border border-stone-600 rounded py-2 pl-10 pr-3 text-white focus:border-amber-500 outline-none font-sans transition-colors">
+                </div>
+            </div>
+
+            <!-- Categorias -->
+            <div class="bg-stone-800/50 border border-stone-700 p-4 rounded-lg shadow-lg flex flex-col gap-2">
+                <h3 class="text-amber-500 font-bold mb-2 flex items-center gap-2 border-b border-stone-700 pb-2"><i data-lucide="layers" class="w-5 h-5"></i> Filtros</h3>
+                
+                <button class="filter-btn active w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="all">
+                    <span class="text-xl">📚</span> Tudo
+                </button>
+                <button class="filter-btn w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="jutsu">
+                    <span class="text-xl">🥷</span> Jutsus
+                </button>
+                <button class="filter-btn w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="chakra">
+                    <span class="text-xl">🌀</span> Chakra
+                </button>
+                <button class="filter-btn w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="dobra">
+                    <span class="text-xl">🌊</span> Dobras/Poderes
+                </button>
+                <button class="filter-btn w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="luta">
+                    <span class="text-xl">🥋</span> Estilos de Luta
+                </button>
+                <button class="filter-btn w-full text-left px-4 py-2 rounded border border-transparent hover:bg-stone-700 transition-colors flex items-center gap-3" data-filter="energia">
+                    <span class="text-xl">⚡</span> Energias
+                </button>
+            </div>
+        </aside>
+
+        <!-- Área de Grade -->
+        <section class="w-full lg:w-3/4">
+            <div id="library-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- Cards renderizados via JS -->
+            </div>
+            
+            <div id="empty-state" class="flex flex-col items-center justify-center h-64 text-stone-500">
+                <i data-lucide="book-dashed" class="w-16 h-16 mb-4 opacity-50"></i>
+                <p class="font-sans">A biblioteca está vazia. Adicione o primeiro conhecimento.</p>
+            </div>
+        </section>
+
     </main>
 
+    <!-- ================= MODAIS ================= -->
+
+    <!-- Fundo Escuro -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 z-50 hidden backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+        
+        <!-- Modal Adicionar (Simplificado) -->
+        <div id="addModal" class="bg-stone-900 border border-amber-800 rounded-lg shadow-[0_0_40px_rgba(180,83,9,0.3)] w-full max-w-xl hidden flex-col my-8">
+            <div class="p-4 border-b border-amber-900/50 flex justify-between items-center bg-stone-950 rounded-t-lg">
+                <h3 class="text-xl font-bold text-amber-500 font-title tracking-wider flex items-center gap-2"><i data-lucide="pen-tool"></i> Registrar Poder</h3>
+                <button onclick="closeModals()" class="text-stone-400 hover:text-white transition-colors"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 space-y-4 font-sans text-sm">
+                
+                <div>
+                    <label class="block text-amber-500/80 mb-1">Nome do Poder/Técnica <span class="text-red-500">*</span></label>
+                    <input type="text" id="entry-title" placeholder="Ex: Bola de Fogo" class="w-full bg-stone-800 border border-stone-600 rounded p-3 text-white focus:border-amber-500 outline-none text-lg">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-amber-500/80 mb-1">Categoria <span class="text-red-500">*</span></label>
+                        <select id="entry-category" class="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-amber-500 outline-none">
+                            <option value="jutsu">🥷 Jutsu / Técnica</option>
+                            <option value="chakra">🌀 Natureza de Chakra</option>
+                            <option value="dobra">🌊 Dobra / Poder Singular</option>
+                            <option value="luta">🥋 Estilo de Luta</option>
+                            <option value="energia">⚡ Energia Externa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-amber-500/80 mb-1">Detalhe (Opcional)</label>
+                        <input type="text" id="entry-detail" placeholder="Ex: Rank B, Passiva, Fogo..." class="w-full bg-stone-800 border border-stone-600 rounded p-2 text-white focus:border-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-amber-500/80 mb-1">Descrição Completa <span class="text-red-500">*</span></label>
+                    <textarea id="entry-desc" rows="5" placeholder="Escreva aqui tudo sobre o poder: o que faz, como funciona, requisitos, custos..." class="w-full bg-stone-800 border border-stone-600 rounded p-3 text-white focus:border-amber-500 outline-none resize-none"></textarea>
+                </div>
+
+            </div>
+            <div class="p-4 border-t border-amber-900/50 flex justify-end gap-3 bg-stone-950 rounded-b-lg">
+                <button onclick="closeModals()" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 rounded text-stone-300 transition-colors font-sans">Cancelar</button>
+                <button onclick="saveEntry()" class="px-6 py-2 bg-amber-700 hover:bg-amber-600 rounded text-white font-bold transition-colors shadow-lg font-sans flex items-center gap-2">
+                    <i data-lucide="check"></i> Salvar
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Visualizar (O Pergaminho Aberto) -->
+        <div id="viewModal" class="w-full max-w-2xl hidden flex-col my-8 relative">
+            
+            <!-- Botões de Controle Externos -->
+            <div class="flex justify-end gap-2 mb-2 font-sans">
+                <button onclick="takeScrollPrint()" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1 rounded-t flex items-center gap-1 text-sm shadow-lg transition-colors border border-emerald-900 border-b-0">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Gerar Imagem
+                </button>
+                <button onclick="closeModals()" class="bg-red-900 hover:bg-red-800 text-white px-3 py-1 rounded-t flex items-center gap-1 text-sm shadow-lg transition-colors border border-red-950 border-b-0">
+                    <i data-lucide="x" class="w-4 h-4"></i> Fechar
+                </button>
+            </div>
+
+            <!-- Área do Pergaminho (Print) -->
+            <div id="scroll-capture" class="bg-scroll p-8 md:p-12 rounded-sm relative">
+                <!-- Madeira do pergaminho -->
+                <div class="absolute top-0 left-[-10px] right-[-10px] h-4 bg-[#5c4033] rounded-full shadow-md"></div>
+                <div class="absolute bottom-0 left-[-10px] right-[-10px] h-4 bg-[#5c4033] rounded-full shadow-md"></div>
+
+                <div class="flex items-start gap-4 mb-6 border-b-2 border-[#b8860b]/30 pb-4">
+                    <span id="v-icon" class="text-5xl drop-shadow-sm mt-1">🥷</span>
+                    <div>
+                        <h2 id="v-title" class="text-3xl font-bold text-[#3f2c1c] font-title uppercase tracking-wider">Nome</h2>
+                        <div class="flex items-center gap-3 text-sm text-[#5c4033] font-sans font-bold mt-1">
+                            <span id="v-category" class="bg-[#b8860b]/20 px-2 py-0.5 rounded border border-[#b8860b]/30">Categoria</span>
+                            <span id="v-detail" class="hidden border-l-2 border-[#b8860b]/30 pl-3 italic">Detalhe</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-[#3f2c1c] text-lg leading-relaxed font-sans">
+                    <p id="v-desc" class="whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NOTIFICAÇÃO -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-amber-700 text-white px-4 py-3 rounded shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2 font-sans">
+        <i data-lucide="check-circle"></i> <span id="toastMsg">Salvo!</span>
+    </div>
+
     <script>
-        // --- ESTADO DO JOGO ---
-        let state = {
-            mestre: "",
-            palavraSecreta: "",
-            jogadores: [],
-            dadosJogo: [], // Array com { nome, isImpostor }
-            jogadorAtualIndex: 0,
-            ecra: 'mestre' // 'mestre', 'setup_jogadores', 'passar', 'revelar', 'jogo', 'fim'
+        const categoryConfig = {
+            'jutsu': { icon: '🥷', label: 'Técnica' },
+            'chakra': { icon: '🌀', label: 'Chakra' },
+            'dobra': { icon: '🌊', label: 'Poder/Dobra' },
+            'luta': { icon: '🥋', label: 'Estilo de Luta' },
+            'energia': { icon: '⚡', label: 'Energia' }
         };
 
-        const appElement = document.getElementById('app');
+        // Começa totalmente vazio
+        let LIBRARY_DATA = [];
 
-        // --- FUNÇÕES DE RENDERIZAÇÃO ---
-        function render() {
-            appElement.innerHTML = '';
-            appElement.className = "w-full max-w-sm mx-auto p-5 fade-in"; 
+        let currentFilter = 'all';
+        let currentSearch = '';
 
-            switch (state.ecra) {
-                case 'mestre': renderMestreScreen(); break;
-                case 'setup_jogadores': renderSetupJogadoresScreen(); break;
-                case 'passar': renderPassarScreen(); break;
-                case 'revelar': renderRevelarScreen(); break;
-                case 'jogo': renderJogoScreen(); break;
-                case 'fim': renderFimScreen(); break;
-            }
-        }
+        lucide.createIcons();
+        renderLibrary();
 
-        // ECRA 1: DEFINIR MESTRE E PALAVRA
-        function renderMestreScreen() {
-            appElement.innerHTML = `
-                <div class="text-center mb-8">
-                    <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-1">IMPOSTOR</h1>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">por Daniel Ruas</p>
-                </div>
-                
-                <div class="bg-gray-800/50 p-6 rounded-2xl cyber-border backdrop-blur-sm mb-6">
-                    <h2 class="text-lg font-semibold mb-4 text-blue-300">A vez do Mestre</h2>
-                    <p class="text-sm text-gray-400 mb-5">O Mestre escolhe a palavra e gere o jogo, não participa nas respostas.</p>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1 ml-1">Nome do Mestre</label>
-                            <input type="text" id="mestreName" placeholder="Ex: João..." 
-                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-400 mb-1 ml-1">Palavra Secreta</label>
-                            <input type="password" id="palavraInput" placeholder="Digite a palavra sem ninguém ver..." 
-                                class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors">
-                            <div class="flex items-center mt-2 ml-1">
-                                <input type="checkbox" id="showWord" class="mr-2 accent-emerald-500" onchange="togglePassword()">
-                                <label for="showWord" class="text-xs text-gray-400">Mostrar palavra</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button onclick="salvarMestre()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all active:scale-95 text-lg">
-                    Continuar
-                </button>
-            `;
-        }
+        // Filtros
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentFilter = e.currentTarget.dataset.filter;
+                renderLibrary();
+            });
+        });
 
-        // ECRA 2: ADICIONAR JOGADORES
-        function renderSetupJogadoresScreen() {
-            let html = `
-                <div class="text-center mb-6">
-                    <p class="text-sm text-gray-400">Mestre: <span class="font-bold text-blue-400">${state.mestre}</span></p>
-                    <h2 class="text-2xl font-bold mt-2">Adicionar Jogadores</h2>
-                </div>
-                
-                <div class="bg-gray-800/50 p-5 rounded-2xl cyber-border mb-6">
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="playerName" placeholder="Nome do jogador..." 
-                            class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
-                            onkeypress="if(event.key === 'Enter') addPlayer()">
-                        <button onclick="addPlayer()" class="bg-blue-600 hover:bg-blue-500 px-5 py-3 rounded-xl font-bold text-xl transition-colors">
-                            +
-                        </button>
-                    </div>
-                    
-                    <ul id="playersList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-            `;
+        // Busca
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearch = e.target.value.toLowerCase();
+            renderLibrary();
+        });
 
-            if (state.jogadores.length === 0) {
-                html += `<li class="text-gray-500 text-sm text-center py-4">Adicione pelo menos 3 jogadores.</li>`;
-            } else {
-                state.jogadores.forEach((player, index) => {
-                    html += `
-                        <li class="flex justify-between items-center bg-gray-700/50 px-4 py-3 rounded-xl border border-gray-600/50">
-                            <span class="font-medium">${player}</span>
-                            <button onclick="removePlayer(${index})" class="text-red-400 hover:text-red-300 font-bold p-1 text-lg leading-none">&times;</button>
-                        </li>
-                    `;
-                });
-            }
-
-            html += `
-                    </ul>
-                </div>
-                
-                <button onclick="iniciarSorteio()" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 text-lg flex justify-center items-center gap-2">
-                    Distribuir Palavras
-                </button>
-                <button onclick="state.ecra='mestre'; render();" class="w-full mt-3 text-gray-500 text-sm py-2 underline hover:text-gray-300">
-                    Voltar para o Mestre
-                </button>
-            `;
-            appElement.innerHTML = html;
-        }
-
-        // ECRA 3: PASSAR TELEMÓVEL
-        function renderPassarScreen() {
-            const nomeAtual = state.dadosJogo[state.jogadorAtualIndex].nome;
-
-            appElement.innerHTML = `
-                <div class="text-center bg-gray-800/80 p-8 rounded-3xl cyber-border mt-10">
-                    <div class="text-6xl mb-6 animate-bounce">📱</div>
-                    <h2 class="text-xl font-medium mb-1 text-gray-400">Passe o telemóvel para</h2>
-                    <h1 class="text-4xl font-black text-white mb-8 tracking-wide">${nomeAtual}</h1>
-                    
-                    <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-8">
-                        <p class="text-amber-400/80 text-sm font-medium">⚠️ Certifique-se de que ninguém está a olhar para o seu ecrã!</p>
-                    </div>
-                    
-                    <button onclick="state.ecra='revelar'; render();" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
-                        Mostrar minha palavra
-                    </button>
-                </div>
-            `;
-        }
-
-        // ECRA 4: REVELAR
-        function renderRevelarScreen() {
-            const jogadorData = state.dadosJogo[state.jogadorAtualIndex];
+        function renderLibrary() {
+            const grid = document.getElementById('library-grid');
+            const emptyState = document.getElementById('empty-state');
             
-            let htmlConteudo = '';
-            
-            if (jogadorData.isImpostor) {
-                htmlConteudo = `
-                    <div class="text-center bg-red-950/40 p-8 rounded-3xl impostor-border mt-10">
-                        <div class="text-6xl mb-4">🤫</div>
-                        <h2 class="text-xl text-red-300/80 font-medium tracking-widest uppercase mb-2">Você é o</h2>
-                        <h1 class="text-4xl font-black text-red-500 mb-6 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">IMPOSTOR</h1>
-                        <p class="text-gray-300 text-sm leading-relaxed">Não deixe que descubram. Preste atenção nas palavras dos outros para tentar adivinhar a palavra secreta!</p>
-                    </div>
-                `;
-            } else {
-                htmlConteudo = `
-                    <div class="text-center bg-blue-950/40 p-8 rounded-3xl cyber-border mt-10">
-                        <div class="text-sm text-blue-300/80 uppercase tracking-widest mb-2 font-medium">A Palavra Secreta é</div>
-                        <h1 class="text-4xl font-black text-white mb-8 tracking-wider bg-gray-900 py-4 rounded-xl border border-blue-500/30 shadow-inner">${state.palavraSecreta}</h1>
-                        <p class="text-gray-300 text-sm">Memorize a palavra. Tente descobrir quem é o impostor fazendo perguntas aos outros.</p>
-                    </div>
-                `;
-            }
-
-            appElement.innerHTML = `
-                ${htmlConteudo}
-                <div class="mt-8">
-                    <button onclick="proximoTurno()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95 text-lg">
-                        Esconder e Continuar
-                    </button>
-                </div>
-            `;
-        }
-
-        // ECRA 5: MESTRE CONTROLA O JOGO
-        function renderJogoScreen() {
-            appElement.innerHTML = `
-                <div class="text-center mb-8">
-                    <h2 class="text-sm text-gray-400 uppercase tracking-widest mb-1">Em Andamento</h2>
-                    <h1 class="text-2xl font-bold text-blue-400">Descubram o Impostor!</h1>
-                </div>
-
-                <div class="bg-gray-800/50 p-6 rounded-3xl cyber-border text-center mb-8">
-                    <p class="text-gray-400 mb-2 text-sm">O Mestre (<span class="text-white font-medium">${state.mestre}</span>) controla esta fase.</p>
-                    <div class="my-6">
-                        <p class="text-xs text-gray-500 mb-1">Palavra desta rodada:</p>
-                        <button onclick="alert('Palavra Secreta: ${state.palavraSecreta}')" class="text-emerald-400 border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 rounded-lg text-sm hover:bg-emerald-500/20 transition">
-                            👁️ Lembrar Mestre da Palavra
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-300">Façam perguntas à vez. Quando o grupo decidir quem é o impostor, o Mestre encerra o jogo.</p>
-                </div>
-
-                <button onclick="state.ecra='fim'; render();" class="w-full bg-red-600/90 hover:bg-red-500 text-white font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all active:scale-95 text-lg">
-                    Encerrar e Revelar Todos
-                </button>
-            `;
-        }
-
-        // ECRA 6: FIM
-        function renderFimScreen() {
-            const impostores = state.dadosJogo.filter(j => j.isImpostor).map(j => j.nome).join(' e ');
-
-            appElement.innerHTML = `
-                <div class="text-center bg-gray-800/80 p-8 rounded-3xl border border-gray-700 mt-6 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-red-500/5"></div>
-                    <div class="relative z-10">
-                        <h2 class="text-lg text-gray-400 mb-2 uppercase tracking-widest font-semibold">Os Impostores eram</h2>
-                        <h1 class="text-3xl font-black text-red-500 mb-6 drop-shadow-md">${impostores}</h1>
-                        
-                        <div class="w-16 h-px bg-gray-600 mx-auto my-6"></div>
-                        
-                        <h2 class="text-sm text-gray-400 mb-2">A Palavra era</h2>
-                        <h3 class="text-2xl font-bold text-white bg-gray-900 inline-block px-6 py-2 rounded-xl border border-gray-700">${state.palavraSecreta}</h3>
-                    </div>
-                </div>
-                
-                <div class="mt-8 space-y-3">
-                    <button onclick="resetarRodada()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">
-                        Nova Palavra (Mesmo Mestre/Jogadores)
-                    </button>
-                    <button onclick="resetTotal()" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 text-sm">
-                        Mudar Tudo (Novo Mestre)
-                    </button>
-                </div>
-            `;
-        }
-
-        // --- LÓGICA DO JOGO ---
-
-        function togglePassword() {
-            const input = document.getElementById('palavraInput');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        function salvarMestre() {
-            const mestreInput = document.getElementById('mestreName').value.trim();
-            const palavraInput = document.getElementById('palavraInput').value.trim();
-
-            if (!mestreInput) {
-                alert("O Mestre precisa de um nome!");
-                return;
-            }
-            if (!palavraInput) {
-                alert("Precisas de escrever uma Palavra Secreta!");
-                return;
-            }
-
-            state.mestre = mestreInput;
-            state.palavraSecreta = palavraInput.toUpperCase();
-            state.ecra = 'setup_jogadores';
-            render();
-        }
-
-        function addPlayer() {
-            const input = document.getElementById('playerName');
-            const name = input.value.trim();
-            if (name && !state.jogadores.includes(name) && name.toLowerCase() !== state.mestre.toLowerCase()) {
-                state.jogadores.push(name);
-                input.value = '';
-                render();
-            } else if (name.toLowerCase() === state.mestre.toLowerCase()) {
-                alert("O Mestre não pode ser um jogador nesta rodada!");
-            }
-        }
-
-        function removePlayer(index) {
-            state.jogadores.splice(index, 1);
-            render();
-        }
-
-        function iniciarSorteio() {
-            if (state.jogadores.length < 3) {
-                alert("É preciso pelo menos 3 jogadores (além do Mestre)!");
-                return;
-            }
-
-            // Decidir quantidade de impostores: 1 (sempre) ou 2 (50% de probabilidade se houver 5+ jogadores)
-            let qtImpostores = 1;
-            if (state.jogadores.length >= 5 && Math.random() > 0.5) {
-                qtImpostores = 2;
-            }
-
-            // Sorteio
-            let indicesImpostores = [];
-            while(indicesImpostores.length < qtImpostores) {
-                let randomIdx = Math.floor(Math.random() * state.jogadores.length);
-                if(!indicesImpostores.includes(randomIdx)){
-                    indicesImpostores.push(randomIdx);
-                }
-            }
-
-            state.dadosJogo = state.jogadores.map((nome, index) => {
-                return {
-                    nome: nome,
-                    isImpostor: indicesImpostores.includes(index)
-                };
+            let filtered = LIBRARY_DATA.filter(item => {
+                const matchFilter = currentFilter === 'all' || item.category === currentFilter;
+                const matchSearch = item.title.toLowerCase().includes(currentSearch) || 
+                                    item.desc.toLowerCase().includes(currentSearch);
+                return matchFilter && matchSearch;
             });
 
-            state.jogadorAtualIndex = 0;
-            state.ecra = 'passar';
-            render();
-        }
-
-        function proximoTurno() {
-            state.jogadorAtualIndex++;
-            if (state.jogadorAtualIndex >= state.dadosJogo.length) {
-                // Todos viram
-                state.ecra = 'jogo';
+            grid.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
             } else {
-                state.ecra = 'passar';
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+                
+                filtered.forEach(item => {
+                    const conf = categoryConfig[item.category];
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-stone-800 border border-stone-600 hover:border-amber-500 rounded-lg p-5 cursor-pointer transition-all hover:shadow-[0_0_15px_rgba(217,119,6,0.15)] relative group';
+                    card.onclick = () => openViewModal(item.id);
+                    
+                    card.innerHTML = `
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl bg-stone-900 border border-stone-700 w-12 h-12 flex items-center justify-center rounded shadow-inner">
+                                ${conf.icon}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs text-amber-500 font-bold uppercase tracking-wider mb-1">${conf.label} ${item.detail ? `• ${item.detail}` : ''}</p>
+                                <h3 class="text-lg font-bold text-stone-200 font-title truncate mb-2">${item.title}</h3>
+                                <p class="text-sm text-stone-400 line-clamp-2 font-sans">${item.desc}</p>
+                            </div>
+                        </div>
+                        
+                        <button onclick="event.stopPropagation(); deleteEntry(${item.id})" class="absolute top-2 right-2 text-stone-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-900 rounded p-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+                lucide.createIcons();
             }
-            render();
         }
 
-        function resetarRodada() {
-            state.palavraSecreta = "";
-            state.ecra = 'mestre'; // Volta a pedir palavra
-            render();
+        const overlay = document.getElementById('modalOverlay');
+
+        function openModal(id) {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            document.getElementById('addModal').classList.add('hidden');
+            document.getElementById('viewModal').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('flex');
         }
 
-        function resetTotal() {
-            state = {
-                mestre: "",
-                palavraSecreta: "",
-                jogadores: [],
-                dadosJogo: [],
-                jogadorAtualIndex: 0,
-                ecra: 'mestre'
+        function closeModals() {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            document.getElementById('entry-title').value = '';
+            document.getElementById('entry-detail').value = '';
+            document.getElementById('entry-desc').value = '';
+        }
+
+        function saveEntry() {
+            const title = document.getElementById('entry-title').value.trim();
+            const category = document.getElementById('entry-category').value;
+            const detail = document.getElementById('entry-detail').value.trim();
+            const desc = document.getElementById('entry-desc').value.trim();
+
+            if (!title || !desc) {
+                alert('Nome e Descrição são obrigatórios!');
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(),
+                title, category, detail, desc
             };
-            render();
+
+            LIBRARY_DATA.unshift(newEntry);
+            renderLibrary();
+            closeModals();
+            showToast('Salvo com sucesso!');
         }
 
-        // Init
-        render();
+        function deleteEntry(id) {
+            if (confirm("Apagar este registro?")) {
+                LIBRARY_DATA = LIBRARY_DATA.filter(item => item.id !== id);
+                renderLibrary();
+            }
+        }
+
+        function openViewModal(id) {
+            const item = LIBRARY_DATA.find(i => i.id === id);
+            if (!item) return;
+
+            const conf = categoryConfig[item.category];
+
+            document.getElementById('v-icon').innerText = conf.icon;
+            document.getElementById('v-title').innerText = item.title;
+            document.getElementById('v-category').innerText = conf.label;
+            
+            const detailEl = document.getElementById('v-detail');
+            if (item.detail) {
+                detailEl.innerText = item.detail;
+                detailEl.classList.remove('hidden');
+            } else {
+                detailEl.classList.add('hidden');
+            }
+
+            document.getElementById('v-desc').innerText = item.desc;
+            
+            openModal('viewModal');
+        }
+
+        function takeScrollPrint() {
+            const captureArea = document.getElementById('scroll-capture');
+            const title = document.getElementById('v-title').innerText.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+            showToast('Gerando imagem...', false);
+
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    backgroundColor: "#1c1917", 
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `Poder_${title}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    showToast('Imagem salva!');
+                }).catch(err => {
+                    console.error("Erro", err);
+                    showToast('Erro ao gerar.', true);
+                });
+            }, 300);
+        }
+
+        function showToast(msg, autoHide = true) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            if(autoHide) {
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2000);
+            }
+        }
     </script>
 </body>
 </html>
