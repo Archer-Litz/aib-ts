@@ -1,138 +1,220 @@
-
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafios Matemáticos da Evelyn - Parte 2</title>
+    <title>Resolução Passo a Passo - Matemática</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: {
-                        kpop: '#ff7eb3',
-                        gaming: '#7e57c2',
-                        stardew: '#66bb6a',
-                        naruto: '#ffa000',
-                        block: '#2196f3'
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- MathJax para renderizar as fórmulas matemáticas lindamente -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { background: linear-gradient(135deg, #f3e5f5 0%, #e1f5fe 100%); min-height: 100vh; }
-        .mission-card { transition: all 0.3s ease; border-radius: 1.5rem; }
-        .mission-card:hover { transform: scale(1.02); }
-        .feedback-hidden { display: none; }
-        .correct { border: 2px solid #4caf50; background-color: #f1f8e9; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .math-block {
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
     </style>
 </head>
-<body class="text-gray-800 pb-20">
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-10 text-center shadow-xl mb-10">
-        <h1 class="text-4xl font-bold mb-2">🚀 Missões de Elite: Evelyn</h1>
-        <p class="opacity-90">Novos desafios de P.A. e P.G. para dominares a matéria!</p>
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md py-6">
+        <div class="container mx-auto px-4 max-w-4xl flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <h1 class="text-2xl font-bold">Portal de Resoluções - Trigonometria</h1>
+        </div>
     </header>
 
-    <main class="container mx-auto px-4 max-w-3xl">
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 max-w-4xl py-8 flex-grow space-y-8">
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-blue-100 mb-6 text-blue-800">
+            <p><strong>Dica de Estudo:</strong> Tente resolver as questões em um rascunho antes de clicar em "Ver Explicação Passo a Passo". Use as fórmulas da <strong>Lei dos Senos</strong> e <strong>Lei dos Cossenos</strong>.</p>
+        </div>
 
-        <!-- Missão 6: Isaac no Brawl Stars (P.A.) -->
-        <article class="mission-card bg-white shadow-lg p-8 mb-8 border-t-8 border-gaming">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="bg-gaming text-white p-4 rounded-2xl"><i class="fa-solid fa-trophy"></i></div>
-                <h3 class="text-2xl font-bold">Missão 6: Recorde do Isaac</h3>
+        <!-- Questão 1 -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
+                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 1</span>
+                    <h3>Lei dos Cossenos</h3>
+                </div>
+                <p class="text-gray-700 mb-4 leading-relaxed">
+                    A caminhada é uma das atividades físicas que, quando realizada com frequência, torna-se eficaz na prevenção de doenças crônicas e na melhora da qualidade de vida. Para a prática de uma caminhada, uma pessoa sai do ponto A, passa pelos pontos B e C e torna ao ponto A, conforme trajeto indicado na figura. Quantos quilômetros ela terá caminhado, se percorrer todo o trajeto? Dado: \( \sqrt{3} = 1,7 \).
+                </p>
+                <div class="bg-gray-50 p-4 rounded-lg mb-4 text-sm text-gray-600 border border-gray-200">
+                    <strong>Dados da figura:</strong> Triângulo ABC. Lado \( AC = 0,8 \text{ km} \), Lado \( AB = 1 \text{ km} \), Ângulo em A = \( 150^\circ \).
+                </div>
+                
+                <button onclick="toggleSolution('sol1')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
+                    Ver Explicação Passo a Passo
+                </button>
+
+                <div id="sol1" class="hidden mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
+                    <p class="mb-2"><strong>Objetivo:</strong> Descobrir o perímetro do triângulo (a soma de todos os lados). Já temos dois lados (\(1\) e \(0,8\)), precisamos descobrir o lado \(BC\) (vamos chamá-lo de \(a\)).</p>
+                    
+                    <p class="mt-4 font-semibold">Passo 1: Aplicar a Lei dos Cossenos</p>
+                    <div class="math-block">
+                        \[ a^2 = b^2 + c^2 - 2bc \cdot \cos(\hat{A}) \]
+                        \[ a^2 = 0,8^2 + 1^2 - 2 \cdot 0,8 \cdot 1 \cdot \cos(150^\circ) \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 2: Encontrar o cosseno de 150°</p>
+                    <p class="text-sm text-gray-600 mb-2">Lembre-se: O cosseno no 2º quadrante é negativo. \(\cos(150^\circ) = -\cos(30^\circ)\).</p>
+                    <div class="math-block">
+                        \[ \cos(150^\circ) = -\frac{\sqrt{3}}{2} \]
+                        Como o enunciado diz que \(\sqrt{3} = 1,7\):
+                        \[ \cos(150^\circ) = -\frac{1,7}{2} = -0,85 \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 3: Substituir e resolver a equação</p>
+                    <div class="math-block">
+                        \[ a^2 = 0,64 + 1 - [1,6 \cdot (-0,85)] \]
+                        \[ a^2 = 1,64 - (-1,36) \]
+                        \[ a^2 = 1,64 + 1,36 \]
+                        \[ a^2 = 3 \]
+                        \[ a = \sqrt{3} \]
+                        \[ a = 1,7 \text{ km} \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 4: Calcular a distância total percorrida</p>
+                    <div class="math-block">
+                        \[ \text{Perímetro} = AB + BC + CA \]
+                        \[ \text{Perímetro} = 1 + 1,7 + 0,8 = \mathbf{3,5 \text{ km}} \]
+                    </div>
+                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
+                        Resposta Final: 3,5 Km
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600 mb-6 italic">O <strong>Isaac</strong> está focado em bater o teu recorde no Brawl Stars!</p>
-            <p class="mb-4">Ele começou o dia com <strong>400 troféus</strong> (<code>a<sub>1</sub></code>). Por cada vitória épica com os amigos, ele ganha exatamente <strong>12 troféus</strong> (<code>r</code>). </p>
-            <p class="font-bold text-gaming mb-4">Quantos troféus terá o Isaac após a sua 21ª vitória?</p>
-            
-            <div class="flex gap-2">
-                <input type="number" id="in-6" class="border-2 border-gray-200 rounded-xl px-4 py-3 w-full focus:border-gaming outline-none" placeholder="Resposta...">
-                <button onclick="check(6, 640)" class="bg-gaming text-white px-8 rounded-xl font-bold hover:opacity-90">Validar</button>
-            </div>
-            <div id="fb-6" class="feedback-hidden mt-4 p-4 rounded-xl"></div>
         </article>
 
-        <!-- Missão 7: Oh My Block (P.G.) -->
-        <article class="mission-card bg-white shadow-lg p-8 mb-8 border-t-8 border-block">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="bg-block text-white p-4 rounded-2xl"><i class="fa-solid fa-users"></i></div>
-                <h3 class="text-2xl font-bold">Missão 7: O Rumor no Bairro</h3>
+        <!-- Questão 2 -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
+                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 2</span>
+                    <h3>Lei dos Senos</h3>
+                </div>
+                <p class="text-gray-700 mb-4 leading-relaxed">
+                    A distância entre duas árvores, representadas pelos pontos A e B, situados em margens opostas de um rio, é de 96 m. Consideremos um ponto C arbitrário na margem onde se localiza a árvore A. Se sabemos que \( B\hat{A}C = 62^\circ \), \( A\hat{C}B = 74^\circ \), \( \cos 28^\circ = 0,88 \), \( \text{sen } 74^\circ = 0,96 \) e \( \text{sen } 44^\circ = 0,70 \), podemos afirmar que a distância entre o ponto C e a árvore que está no ponto A é de:
+                </p>
+                
+                <button onclick="toggleSolution('sol2')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
+                    Ver Explicação Passo a Passo
+                </button>
+
+                <div id="sol2" class="hidden mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
+                    <p class="mb-2"><strong>Objetivo:</strong> Encontrar a distância de C até A (lado \(b\)). O lado \(AB\) mede \(96 \text{ m}\) (lado \(c\)).</p>
+                    
+                    <p class="mt-4 font-semibold">Passo 1: Descobrir o terceiro ângulo do triângulo (\( \hat{B} \))</p>
+                    <p class="text-sm text-gray-600 mb-2">A soma dos ângulos internos de qualquer triângulo é sempre 180°.</p>
+                    <div class="math-block">
+                        \[ \hat{A} + \hat{B} + \hat{C} = 180^\circ \]
+                        \[ 62^\circ + \hat{B} + 74^\circ = 180^\circ \]
+                        \[ \hat{B} + 136^\circ = 180^\circ \]
+                        \[ \hat{B} = 180^\circ - 136^\circ = 44^\circ \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 2: Aplicar a Lei dos Senos</p>
+                    <p class="text-sm text-gray-600 mb-2">Vamos relacionar o lado que queremos (\(AC = b\)) com seu ângulo oposto (\(\hat{B} = 44^\circ\)) e o lado que temos (\(AB = c = 96\)) com seu ângulo oposto (\(\hat{C} = 74^\circ\)).</p>
+                    <div class="math-block">
+                        \[ \frac{b}{\text{sen}(\hat{B})} = \frac{c}{\text{sen}(\hat{C})} \]
+                        \[ \frac{AC}{\text{sen}(44^\circ)} = \frac{96}{\text{sen}(74^\circ)} \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 3: Substituir os valores dados e resolver</p>
+                    <div class="math-block">
+                        \[ \frac{AC}{0,70} = \frac{96}{0,96} \]
+                        \[ \frac{AC}{0,70} = 100 \]
+                        \[ AC = 100 \cdot 0,70 \]
+                        \[ AC = \mathbf{70 \text{ m}} \]
+                    </div>
+                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
+                        Resposta Final: 70 m
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600 mb-6 italic">Em <strong>Oh My Block</strong>, um segredo espalha-se rápido!</p>
-            <p class="mb-4">No 1º minuto, apenas <strong>2 pessoas</strong> sabem do segredo (<code>a<sub>1</sub></code>). A cada minuto que passa, o número de pessoas que descobre o segredo <strong>quadruplica</strong> (razão <code>q = 4</code>).</p>
-            <p class="font-bold text-block mb-4">Quantas pessoas saberão o segredo ao fim de 5 minutos?</p>
-            
-            <div class="flex gap-2">
-                <input type="number" id="in-7" class="border-2 border-gray-200 rounded-xl px-4 py-3 w-full focus:border-block outline-none" placeholder="Resposta...">
-                <button onclick="check(7, 512)" class="bg-block text-white px-8 rounded-xl font-bold hover:opacity-90">Validar</button>
-            </div>
-            <div id="fb-7" class="feedback-hidden mt-4 p-4 rounded-xl"></div>
         </article>
 
-        <!-- Missão 8: Naruto (P.A.) -->
-        <article class="mission-card bg-white shadow-lg p-8 mb-8 border-t-8 border-naruto">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="bg-naruto text-white p-4 rounded-2xl"><i class="fa-solid fa-scroll"></i></div>
-                <h3 class="text-2xl font-bold">Missão 8: Treino de Kunais</h3>
-            </div>
-            <p class="text-gray-600 mb-6 italic">Naruto e o Clã Uzumaki estão a treinar pontaria.</p>
-            <p class="mb-4">Na primeira hora, eles lançaram <strong>100 kunais</strong> (<code>a<sub>1</sub></code>). Para aumentar a resistência, a cada hora eles lançam <strong>15 kunais a mais</strong> do que na hora anterior (<code>r = 15</code>).</p>
-            <p class="font-bold text-orange-600 mb-4">Quantas kunais serão lançadas exatamente na 12ª hora de treino?</p>
-            
-            <div class="flex gap-2">
-                <input type="number" id="in-8" class="border-2 border-gray-200 rounded-xl px-4 py-3 w-full focus:border-naruto outline-none" placeholder="Resposta...">
-                <button onclick="check(8, 265)" class="bg-naruto text-white px-8 rounded-xl font-bold hover:opacity-90">Validar</button>
-            </div>
-            <div id="fb-8" class="feedback-hidden mt-4 p-4 rounded-xl"></div>
-        </article>
+        <!-- Questão 3 -->
+        <article class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
+                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 3</span>
+                    <h3>Lei dos Cossenos</h3>
+                </div>
+                <p class="text-gray-700 mb-4 leading-relaxed">
+                    O acesso ao aeroporto de uma cidade é feito por duas vias de contorno retilíneo que se cruzam segundo um ângulo de 53°. A primeira tem 2,7 km de extensão, e a outra, 3,5 km de extensão. As vias têm origem em dois postos de gasolina. Qual é a distância entre esses postos? Use a aproximação \( \cos 53^\circ = 0,6 \).
+                </p>
+                
+                <button onclick="toggleSolution('sol3')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
+                    Ver Explicação Passo a Passo
+                </button>
 
-        <!-- Missão 9: K-Pop World Tour (P.G.) -->
-        <article class="mission-card bg-white shadow-lg p-8 mb-8 border-t-8 border-kpop">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="bg-kpop text-white p-4 rounded-2xl"><i class="fa-solid fa-microphone-lines"></i></div>
-                <h3 class="text-2xl font-bold">Missão 9: Tour Mundial</h3>
+                <div id="sol3" class="hidden mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
+                    <p class="mb-2"><strong>Objetivo:</strong> O problema descreve um triângulo onde conhecemos dois lados (\(2,7 \text{ km}\) e \(3,5 \text{ km}\)) e o ângulo entre eles (\(53^\circ\)). Queremos a distância entre os postos, que é o terceiro lado (vamos chamar de \(d\)).</p>
+                    
+                    <p class="mt-4 font-semibold">Passo 1: Aplicar a Lei dos Cossenos</p>
+                    <div class="math-block">
+                        \[ d^2 = l_1^2 + l_2^2 - 2 \cdot l_1 \cdot l_2 \cdot \cos(\theta) \]
+                        \[ d^2 = (2,7)^2 + (3,5)^2 - 2 \cdot 2,7 \cdot 3,5 \cdot \cos(53^\circ) \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 2: Realizar os cálculos passo a passo</p>
+                    <div class="math-block">
+                        \[ d^2 = 7,29 + 12,25 - 2 \cdot (9,45) \cdot 0,6 \]
+                        \[ d^2 = 19,54 - 18,9 \cdot 0,6 \]
+                        \[ d^2 = 19,54 - 11,34 \]
+                        \[ d^2 = 8,20 \]
+                    </div>
+
+                    <p class="mt-4 font-semibold">Passo 3: Finalizar</p>
+                    <div class="math-block">
+                        \[ d = \mathbf{\sqrt{8,2} \text{ km}} \]
+                    </div>
+                    <p class="text-sm text-gray-600 italic">Nota: Sem calculadora, a resposta geralmente é aceita no formato de raiz. \(\sqrt{8,2}\) é aproximadamente \(2,86 \text{ km}\).</p>
+                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
+                        Resposta Final: d = &radic;8,2 km
+                    </div>
+                </div>
             </div>
-            <p class="text-gray-600 mb-6 italic">Um grupo de K-pop começou uma tour pequena mas que está a explodir!</p>
-            <p class="mb-4">No primeiro concerto, tiveram <strong>500 fãs</strong> (<code>a<sub>1</sub></code>). A fama é tanta que o público <strong>triplica</strong> (<code>q = 3</code>) a cada novo concerto da tour.</p>
-            <p class="font-bold text-pink-600 mb-4">Quantos fãs estarão presentes no 6º concerto desta tour?</p>
-            
-            <div class="flex gap-2">
-                <input type="number" id="in-9" class="border-2 border-gray-200 rounded-xl px-4 py-3 w-full focus:border-kpop outline-none" placeholder="Resposta...">
-                <button onclick="check(9, 121500)" class="bg-kpop text-white px-8 rounded-xl font-bold hover:opacity-90">Validar</button>
-            </div>
-            <div id="fb-9" class="feedback-hidden mt-4 p-4 rounded-xl"></div>
         </article>
 
     </main>
 
-    <script>
-        const solved = { 6: false, 7: false, 8: false, 9: false };
-        
-        const explanations = {
-            6: "<strong>Resolução P.A.:</strong> a<sub>21</sub> = 400 + (21-1) * 12 <br> a<sub>21</sub> = 400 + 240 = 640.",
-            7: "<strong>Resolução P.G.:</strong> a<sub>5</sub> = 2 * 4<sup>(5-1)</sup> <br> a<sub>5</sub> = 2 * 256 = 512.",
-            8: "<strong>Resolução P.A.:</strong> a<sub>12</sub> = 100 + (12-1) * 15 <br> a<sub>12</sub> = 100 + 165 = 265.",
-            9: "<strong>Resolução P.G.:</strong> a<sub>6</sub> = 500 * 3<sup>(6-1)</sup> <br> a<sub>6</sub> = 500 * 243 = 121.500 fãs!"
-        };
+    <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>Criado para auxiliar nos estudos de Matemática. Ótimo trabalho nas anotações à mão!</p>
+        </div>
+    </footer>
 
-        function check(id, correct) {
-            const val = parseInt(document.getElementById(`in-${id}`).value);
-            const fb = document.getElementById(`fb-${id}`);
-            
-            if(val === correct) {
-                fb.innerHTML = `<p class="font-bold text-green-700">✨ Incrível, Evelyn! Acertaste!</p><p class="text-sm mt-2 text-green-600">${explanations[id]}</p>`;
-                fb.className = "feedback-visible mt-4 p-4 rounded-xl bg-green-100 border border-green-300";
-                document.getElementById(`in-${id}`).classList.add('correct');
+    <script>
+        // Função simples para mostrar/esconder as resoluções
+        function toggleSolution(id) {
+            const element = document.getElementById(id);
+            if (element.classList.contains('hidden')) {
+                element.classList.remove('hidden');
+                // Adiciona uma leve animação de fade-in
+                element.style.opacity = 0;
+                let opacity = 0;
+                let timer = setInterval(function() {
+                    if(opacity >= 1) clearInterval(timer);
+                    element.style.opacity = opacity;
+                    opacity += 0.1;
+                }, 20);
             } else {
-                fb.innerHTML = `<p class="font-bold text-red-700">❌ Quase! Tenta novamente a conta.</p>`;
-                fb.className = "feedback-visible mt-4 p-4 rounded-xl bg-red-100 border border-red-300";
+                element.classList.add('hidden');
             }
         }
     </script>
