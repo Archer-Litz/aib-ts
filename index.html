@@ -1,222 +1,349 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resolução Passo a Passo - Matemática</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- MathJax para renderizar as fórmulas matemáticas lindamente -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .math-block {
-            overflow-x: auto;
-            padding: 1rem 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribe Pro - Gerador de Atas</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Configuração de fontes do Tailwind -->
+<script>
+tailwind.config = {
+theme: {
+extend: {
+fontFamily: {
+serif: ['"Times New Roman"', 'Times', 'serif'],
+sans: ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+}
+}
+}
+}
+</script>
+<style>
+/* Estilos específicos para impressão /
+@media print {
+body {
+background-color: white;
+margin: 0;
+padding: 0;
+-webkit-print-color-adjust: exact;
+color-adjust: exact;
+}
+@page {
+size: A4;
+margin: 15mm;
+}
+/ Esconde as barras de rolagem /
+::-webkit-scrollbar {
+display: none;
+}
+.no-print {
+display: none !important;
+}
+.print-only-container {
+box-shadow: none !important;
+margin: 0 !important;
+padding: 0 !important;
+width: 100% !important;
+max-width: none !important;
+min-height: auto !important;
+}
+}
+/ Efeito de marca de água /
+.watermark {
+position: absolute;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+pointer-events: none;
+z-index: 0;
+overflow: hidden;
+opacity: 0.03; / Muito subtil */
+}
+.watermark span {
+font-size: 120px;
+font-family: serif;
+font-weight: bold;
+transform: rotate(-45deg);
+letter-spacing: 0.1em;
+user-select: none;
+}
+@media print {
+.watermark {
+opacity: 0.05;
+}
+}
+</style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="bg-slate-100 flex flex-col min-h-screen font-sans">
 
-    <!-- Header -->
-    <header class="bg-blue-600 text-white shadow-md py-6">
-        <div class="container mx-auto px-4 max-w-4xl flex items-center gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            <h1 class="text-2xl font-bold">Portal de Resoluções - Trigonometria</h1>
-        </div>
-    </header>
+<!-- CABEÇALHO (Oculto na impressão) -->
+<header class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center no-print z-20 relative">
+<div class="flex items-center gap-2">
+<!-- Ícone de Documento -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+<h1 class="text-xl font-bold tracking-wider">Scribe Pro Web</h1>
+</div>
+<button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors shadow-sm font-medium">
+<!-- Ícone de Impressora -->
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+<span class="hidden sm:inline">Imprimir / Salvar PDF</span>
+</button>
+</header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 max-w-4xl py-8 flex-grow space-y-8">
-        
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-blue-100 mb-6 text-blue-800">
-            <p><strong>Dica de Estudo:</strong> Tente resolver as questões em um rascunho antes de clicar em "Ver Explicação Passo a Passo". Use as fórmulas da <strong>Lei dos Senos</strong> e <strong>Lei dos Cossenos</strong>.</p>
-        </div>
+<main class="flex-1 flex flex-col lg:flex-row overflow-hidden no-print">
 
-        <!-- Questão 1 -->
-        <article class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-6">
-                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
-                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 1</span>
-                    <h3>Lei dos Cossenos</h3>
-                </div>
-                <p class="text-gray-700 mb-4 leading-relaxed">
-                    A caminhada é uma das atividades físicas que, quando realizada com frequência, torna-se eficaz na prevenção de doenças crônicas e na melhora da qualidade de vida. Para a prática de uma caminhada, uma pessoa sai do ponto A, passa pelos pontos B e C e torna ao ponto A, conforme trajeto indicado na figura. Quantos quilômetros ela terá caminhado, se percorrer todo o trajeto? Dado: \( \sqrt{3} = 1,7 \).
-                </p>
-                <div class="bg-gray-50 p-4 rounded-lg mb-4 text-sm text-gray-600 border border-gray-200">
-                    <strong>Dados da figura:</strong> Triângulo ABC. Lado \( AC = 0,8 \text{ km} \), Lado \( AB = 1 \text{ km} \), Ângulo em A = \( 150^\circ \).
-                </div>
-                
-                <button onclick="toggleSolution('sol1')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
-                    Ver Explicação Passo a Passo
-                </button>
+<!-- PAINEL DE CONTROLE / FORMULÁRIO (Oculto na impressão) -->
+<aside class="w-full lg:w-1/3 xl:w-1/4 bg-white border-r border-slate-200 p-6 overflow-y-auto shadow-sm z-10">
+<h2 class="text-lg font-semibold text-slate-800 mb-6 flex items-center gap-2 border-b pb-2">
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>
+Dados da Ata
+</h2>
 
-                <div id="sol1" class="hidden mt-6 pt-6 border-t border-gray-200">
-                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
-                    <p class="mb-2"><strong>Objetivo:</strong> Descobrir o perímetro do triângulo (a soma de todos os lados). Já temos dois lados (\(1\) e \(0,8\)), precisamos descobrir o lado \(BC\) (vamos chamá-lo de \(a\)).</p>
-                    
-                    <p class="mt-4 font-semibold">Passo 1: Aplicar a Lei dos Cossenos</p>
-                    <div class="math-block">
-                        \[ a^2 = b^2 + c^2 - 2bc \cdot \cos(\hat{A}) \]
-                        \[ a^2 = 0,8^2 + 1^2 - 2 \cdot 0,8 \cdot 1 \cdot \cos(150^\circ) \]
-                    </div>
+<form id="ataForm" class="space-y-5">
+<!-- Seção: Institucional -->
+<div class="space-y-3">
+<label class="block text-sm font-medium text-slate-700">Nome do Capítulo</label>
+<input type="text" id="chapterName" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"/>
+</div>
 
-                    <p class="mt-4 font-semibold">Passo 2: Encontrar o cosseno de 150°</p>
-                    <p class="text-sm text-gray-600 mb-2">Lembre-se: O cosseno no 2º quadrante é negativo. \(\cos(150^\circ) = -\cos(30^\circ)\).</p>
-                    <div class="math-block">
-                        \[ \cos(150^\circ) = -\frac{\sqrt{3}}{2} \]
-                        Como o enunciado diz que \(\sqrt{3} = 1,7\):
-                        \[ \cos(150^\circ) = -\frac{1,7}{2} = -0,85 \]
-                    </div>
+<!-- Seção: Tempo e Local -->
+<div class="grid grid-cols-2 gap-3">
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Data</label>
+<input type="date" id="date" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Local</label>
+<input type="text" id="location" placeholder="Ex: Sede do Capítulo..." class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Início</label>
+<input type="time" id="startTime" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Término</label>
+<input type="time" id="endTime" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+</div>
 
-                    <p class="mt-4 font-semibold">Passo 3: Substituir e resolver a equação</p>
-                    <div class="math-block">
-                        \[ a^2 = 0,64 + 1 - [1,6 \cdot (-0,85)] \]
-                        \[ a^2 = 1,64 - (-1,36) \]
-                        \[ a^2 = 1,64 + 1,36 \]
-                        \[ a^2 = 3 \]
-                        \[ a = \sqrt{3} \]
-                        \[ a = 1,7 \text{ km} \]
-                    </div>
+<hr class="my-4 border-slate-200" />
+<h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+Participantes
+</h2>
 
-                    <p class="mt-4 font-semibold">Passo 4: Calcular a distância total percorrida</p>
-                    <div class="math-block">
-                        \[ \text{Perímetro} = AB + BC + CA \]
-                        \[ \text{Perímetro} = 1 + 1,7 + 0,8 = \mathbf{3,5 \text{ km}} \]
-                    </div>
-                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
-                        Resposta Final: 3,5 Km
-                    </div>
-                </div>
-            </div>
-        </article>
+<!-- Seção: Participantes -->
+<div class="space-y-3">
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Mestre Conselheiro</label>
+<input type="text" id="mcName" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Escrivão</label>
+<input type="text" id="scribeName" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm"/>
+</div>
+<div class="space-y-1">
+<label class="block text-sm font-medium text-slate-700">Irmãos Presentes</label>
+<textarea id="attendees" rows="3" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-y" placeholder="Nomes separados por vírgula..."></textarea>
+</div>
+</div>
 
-        <!-- Questão 2 -->
-        <article class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-6">
-                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
-                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 2</span>
-                    <h3>Lei dos Senos</h3>
-                </div>
-                <p class="text-gray-700 mb-4 leading-relaxed">
-                    A distância entre duas árvores, representadas pelos pontos A e B, situados em margens opostas de um rio, é de 96 m. Consideremos um ponto C arbitrário na margem onde se localiza a árvore A. Se sabemos que \( B\hat{A}C = 62^\circ \), \( A\hat{C}B = 74^\circ \), \( \cos 28^\circ = 0,88 \), \( \text{sen } 74^\circ = 0,96 \) e \( \text{sen } 44^\circ = 0,70 \), podemos afirmar que a distância entre o ponto C e a árvore que está no ponto A é de:
-                </p>
-                
-                <button onclick="toggleSolution('sol2')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
-                    Ver Explicação Passo a Passo
-                </button>
+<hr class="my-4 border-slate-200" />
+<h2 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2 border-b pb-2">
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><line x1="21" y1="6" x2="3" y2="6"></line><line x1="15" y1="12" x2="3" y2="12"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+Deliberações
+</h2>
 
-                <div id="sol2" class="hidden mt-6 pt-6 border-t border-gray-200">
-                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
-                    <p class="mb-2"><strong>Objetivo:</strong> Encontrar a distância de C até A (lado \(b\)). O lado \(AB\) mede \(96 \text{ m}\) (lado \(c\)).</p>
-                    
-                    <p class="mt-4 font-semibold">Passo 1: Descobrir o terceiro ângulo do triângulo (\( \hat{B} \))</p>
-                    <p class="text-sm text-gray-600 mb-2">A soma dos ângulos internos de qualquer triângulo é sempre 180°.</p>
-                    <div class="math-block">
-                        \[ \hat{A} + \hat{B} + \hat{C} = 180^\circ \]
-                        \[ 62^\circ + \hat{B} + 74^\circ = 180^\circ \]
-                        \[ \hat{B} + 136^\circ = 180^\circ \]
-                        \[ \hat{B} = 180^\circ - 136^\circ = 44^\circ \]
-                    </div>
+<!-- Seção: Deliberações -->
+<div class="space-y-3 pb-8">
+<p class="text-xs text-slate-500 mb-2">Digite o corpo principal da ata. Quebras de linha criarão novos parágrafos automaticamente no documento final.</p>
+<textarea id="deliberations" rows="12" class="w-full p-3 border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-y font-serif leading-relaxed"></textarea>
+</div>
+</form>
+</aside>
 
-                    <p class="mt-4 font-semibold">Passo 2: Aplicar a Lei dos Senos</p>
-                    <p class="text-sm text-gray-600 mb-2">Vamos relacionar o lado que queremos (\(AC = b\)) com seu ângulo oposto (\(\hat{B} = 44^\circ\)) e o lado que temos (\(AB = c = 96\)) com seu ângulo oposto (\(\hat{C} = 74^\circ\)).</p>
-                    <div class="math-block">
-                        \[ \frac{b}{\text{sen}(\hat{B})} = \frac{c}{\text{sen}(\hat{C})} \]
-                        \[ \frac{AC}{\text{sen}(44^\circ)} = \frac{96}{\text{sen}(74^\circ)} \]
-                    </div>
+<!-- ÁREA DE VISUALIZAÇÃO DO DOCUMENTO -->
+<section class="w-full lg:w-2/3 xl:w-3/4 bg-slate-200 p-4 lg:p-8 overflow-y-auto flex justify-center no-print">
 
-                    <p class="mt-4 font-semibold">Passo 3: Substituir os valores dados e resolver</p>
-                    <div class="math-block">
-                        \[ \frac{AC}{0,70} = \frac{96}{0,96} \]
-                        \[ \frac{AC}{0,70} = 100 \]
-                        \[ AC = 100 \cdot 0,70 \]
-                        \[ AC = \mathbf{70 \text{ m}} \]
-                    </div>
-                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
-                        Resposta Final: 70 m
-                    </div>
-                </div>
-            </div>
-        </article>
+<!-- Documento A4 (Será o único elemento visível ao imprimir através de CSS e JS) -->
+<div id="printDocument" class="bg-white shadow-2xl w-full max-w-[210mm] min-h-[297mm] px-[20mm] py-[20mm] relative print-only-container">
 
-        <!-- Questão 3 -->
-        <article class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="p-6">
-                <div class="flex items-center gap-2 mb-4 text-blue-600 font-bold">
-                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm">Questão 3</span>
-                    <h3>Lei dos Cossenos</h3>
-                </div>
-                <p class="text-gray-700 mb-4 leading-relaxed">
-                    O acesso ao aeroporto de uma cidade é feito por duas vias de contorno retilíneo que se cruzam segundo um ângulo de 53°. A primeira tem 2,7 km de extensão, e a outra, 3,5 km de extensão. As vias têm origem em dois postos de gasolina. Qual é a distância entre esses postos? Use a aproximação \( \cos 53^\circ = 0,6 \).
-                </p>
-                
-                <button onclick="toggleSolution('sol3')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200">
-                    Ver Explicação Passo a Passo
-                </button>
+<!-- Marca d'água -->
+<div class="watermark">
+<span>SCRIBE</span>
+</div>
 
-                <div id="sol3" class="hidden mt-6 pt-6 border-t border-gray-200">
-                    <h4 class="font-bold text-lg mb-4 text-green-700">Resolução:</h4>
-                    <p class="mb-2"><strong>Objetivo:</strong> O problema descreve um triângulo onde conhecemos dois lados (\(2,7 \text{ km}\) e \(3,5 \text{ km}\)) e o ângulo entre eles (\(53^\circ\)). Queremos a distância entre os postos, que é o terceiro lado (vamos chamar de \(d\)).</p>
-                    
-                    <p class="mt-4 font-semibold">Passo 1: Aplicar a Lei dos Cossenos</p>
-                    <div class="math-block">
-                        \[ d^2 = l_1^2 + l_2^2 - 2 \cdot l_1 \cdot l_2 \cdot \cos(\theta) \]
-                        \[ d^2 = (2,7)^2 + (3,5)^2 - 2 \cdot 2,7 \cdot 3,5 \cdot \cos(53^\circ) \]
-                    </div>
+<!-- CONTEÚDO DO DOCUMENTO -->
+<div class="relative z-10 font-serif text-black h-full flex flex-col">
 
-                    <p class="mt-4 font-semibold">Passo 2: Realizar os cálculos passo a passo</p>
-                    <div class="math-block">
-                        \[ d^2 = 7,29 + 12,25 - 2 \cdot (9,45) \cdot 0,6 \]
-                        \[ d^2 = 19,54 - 18,9 \cdot 0,6 \]
-                        \[ d^2 = 19,54 - 11,34 \]
-                        \[ d^2 = 8,20 \]
-                    </div>
+<!-- Cabeçalho superior pequeno -->
+<div class="flex justify-between text-[8px] sm:text-[10px] text-gray-500 mb-12">
+<span id="docHeaderDate"></span>
+<span class="font-semibold">Scribe Pro - Excelência em Escrivania DeMolay</span>
+<span></span>
+</div>
 
-                    <p class="mt-4 font-semibold">Passo 3: Finalizar</p>
-                    <div class="math-block">
-                        \[ d = \mathbf{\sqrt{8,2} \text{ km}} \]
-                    </div>
-                    <p class="text-sm text-gray-600 italic">Nota: Sem calculadora, a resposta geralmente é aceita no formato de raiz. \(\sqrt{8,2}\) é aproximadamente \(2,86 \text{ km}\).</p>
-                    <div class="mt-4 p-3 bg-green-100 text-green-800 rounded font-bold text-center border border-green-300">
-                        Resposta Final: d = &radic;8,2 km
-                    </div>
-                </div>
-            </div>
-        </article>
+<!-- Título da Ata -->
+<div class="text-center mb-10">
+<h1 class="text-xl sm:text-2xl font-bold tracking-wide">ATA DE REUNIÃO</h1>
+<h1 class="text-xl sm:text-2xl font-bold tracking-wide mb-2">ADMINISTRATIVA</h1>
+<h2 id="docChapterName" class="text-xs sm:text-sm uppercase tracking-widest text-gray-700"></h2>
+<div class="w-48 h-[1px] bg-black mx-auto mt-4"></div>
+</div>
 
-    </main>
+<!-- Corpo da Ata -->
+<div class="text-sm sm:text-base text-justify leading-relaxed flex-1">
 
-    <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
-        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-            <p>Criado para auxiliar nos estudos de Matemática. Ótimo trabalho nas anotações à mão!</p>
-        </div>
-    </footer>
+<!-- Parágrafo de Abertura -->
+<p class="mb-6 indent-8">
+Aos <span id="docDate"></span>, na <span id="docLocation"></span>, reuniram-se os membros para sessão administrativa. Sob a presidência do Mestre Conselheiro, Irmão <span id="docMcNameOpening"></span> os trabalhos foram abertos em harmonia.
+</p>
 
-    <script>
-        // Função simples para mostrar/esconder as resoluções
-        function toggleSolution(id) {
-            const element = document.getElementById(id);
-            if (element.classList.contains('hidden')) {
-                element.classList.remove('hidden');
-                // Adiciona uma leve animação de fade-in
-                element.style.opacity = 0;
-                let opacity = 0;
-                let timer = setInterval(function() {
-                    if(opacity >= 1) clearInterval(timer);
-                    element.style.opacity = opacity;
-                    opacity += 0.1;
-                }, 20);
-            } else {
-                element.classList.add('hidden');
-            }
-        }
-    </script>
+<!-- Lista de Presença -->
+<p class="mb-6">
+<span class="uppercase font-semibold tracking-wider block mb-2">Deliberações:</span>
+Instaurou-se a presente reunião às <span id="docStartTime"></span>, contando com a presença dos Irmãos: <span id="docAttendees"></span>.
+</p>
+
+<!-- Deliberações Dinâmicas -->
+<div id="docDeliberations"></div>
+
+<!-- Parágrafo de Encerramento -->
+<p class="mb-16 indent-8 mt-6">
+Nada mais havendo a tratar, o Mestre Conselheiro encerrou a sessão às <span id="docEndTime"></span> - de forma cordial, do que eu, Escrivão, lavrei a presente ata.
+</p>
+
+</div>
+
+<!-- Seção de Assinaturas -->
+<div class="flex justify-between items-end mt-12 pb-8 w-full max-w-[90%] mx-auto">
+<div class="flex flex-col items-center w-[45%]">
+<div class="w-full border-b border-black mb-2"></div>
+<span class="text-xs uppercase font-bold text-center">Irmão <span id="docMcNameSign"></span></span>
+<span class="text-[10px] uppercase tracking-widest text-center mt-1">Mestre Conselheiro</span>
+</div>
+
+<div class="flex flex-col items-center w-[45%]">
+<div class="w-full border-b border-black mb-2"></div>
+<span id="docScribeNameSign" class="text-xs uppercase font-bold text-center"></span>
+<span class="text-[10px] uppercase tracking-widest text-center mt-1">Escrivão</span>
+</div>
+</div>
+
+<!-- Rodapé da Página -->
+<div class="mt-auto border-t border-gray-200 pt-4 flex justify-between text-[8px] sm:text-[10px] text-gray-400">
+<span>Gerado via Plataforma Scribe Web</span>
+<span>1/1</span>
+</div>
+
+</div>
+</div>
+</section>
+</main>
+
+<!-- CONTAINER QUE SERÁ MOSTRADO NA IMPRESSÃO (Substitui o body) -->
+<div id="printRoot" class="hidden print:block print:w-full"></div>
+
+<script>
+// Dados Iniciais (Simulando o estado da aplicação)
+const state = {
+chapterName: 'CAPÍTULO TORRE DE VIGIA Nº 1154 - MINAS GERAIS',
+date: '2028-03-21',
+startTime: '15:15',
+endTime: '15:40',
+location: 'sede do Capítulo Torre de Vigia Nº 1154',
+mcName: 'Hélio Jorge Neves',
+scribeName: 'Daniel Ruas Miranda Barreto',
+attendees: 'Davi Ferraz, Davi Alves Carvalho, Davi Alves Moreira, Daniel Ruas, Theo Oriebir e Hélio Jorge Neves',
+deliberations: O Mestre Conselheiro deliberou a realização de ações filantrópicas de impacto social. A iniciativa consiste em conciliar nossos horários para arrecadarmos o máximo de alimentos, visando a montagem de cestas básicas sem restrição de itens específicos. Primordialmente, o Mestre Conselheiro reforça seu compromisso em servir a todos, reiterando que nosso propósito é auxiliar quem precisa, independentemente de julgamentos de valor.\n\nNeste diapasão, visitaremos supermercados e doadores em potencial aos finais de semana. Além disso, houve uma sugestão por parte do Mestre Conselheiro para realizarmos uma atividade extracapitular na residência do Escrivão, que gentilmente ofereceu o espaço para uma confraternização com churrasco, piscina e jogos de tabuleiro.
+};
+
+// Elementos do DOM - Inputs
+const inputs = {
+chapterName: document.getElementById('chapterName'),
+date: document.getElementById('date'),
+startTime: document.getElementById('startTime'),
+endTime: document.getElementById('endTime'),
+location: document.getElementById('location'),
+mcName: document.getElementById('mcName'),
+scribeName: document.getElementById('scribeName'),
+attendees: document.getElementById('attendees'),
+deliberations: document.getElementById('deliberations')
+};
+
+// Função para formatar data (Ex: 21 de março de 2028)
+function formatDate(dateString) {
+if (!dateString) return '[DATA]';
+const parts = dateString.split('-');
+if (parts.length !== 3) return dateString;
+
+const date = new Date(parts[0], parts[1] - 1, parts[2]);
+const options = { day: 'numeric', month: 'long', year: 'numeric' };
+return date.toLocaleDateString('pt-BR', options);
+}
+
+// Função para atualizar o documento de visualização
+function updatePreview() {
+document.getElementById('docChapterName').textContent = state.chapterName;
+document.getElementById('docDate').textContent = formatDate(state.date);
+document.getElementById('docLocation').textContent = state.location || '[LOCAL]';
+document.getElementById('docStartTime').textContent = state.startTime || '[HH:MM]';
+document.getElementById('docEndTime').textContent = state.endTime || '[HH:MM]';
+
+document.getElementById('docMcNameOpening').textContent = state.mcName || '[NOME DO MESTRE CONSELHEIRO]';
+document.getElementById('docMcNameSign').textContent = state.mcName || '________________________';
+
+document.getElementById('docScribeNameSign').textContent = state.scribeName || '________________________';
+
+document.getElementById('docAttendees').textContent = state.attendees || '[LISTA DE IRMÃOS]';
+
+// Processar deliberações transformando quebras de linha em parágrafos HTML
+const deliberationsContainer = document.getElementById('docDeliberations');
+deliberationsContainer.innerHTML = '';
+
+const paragraphs = state.deliberations.split('\n');
+paragraphs.forEach(paragraph => {
+if (paragraph.trim() !== '') {
+const p = document.createElement('p');
+p.className = 'mb-6 indent-8';
+p.textContent = paragraph;
+deliberationsContainer.appendChild(p);
+}
+});
+
+// Atualizar cabeçalho superior com data atual
+const now = new Date();
+const dateStr = now.toLocaleDateString('pt-BR');
+const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+document.getElementById('docHeaderDate').textContent = ${dateStr}, ${timeStr};
+}
+
+// Inicializar os inputs com o estado e adicionar eventos de 'input'
+Object.keys(inputs).forEach(key => {
+const input = inputs[key];
+input.value = state[key]; // Preenche o valor inicial
+
+input.addEventListener('input', (e) => {
+state[key] = e.target.value; // Atualiza o estado
+updatePreview(); // Atualiza a pré-visualização
+});
+});
+
+// Configuração especial para impressão: clonar o documento para a raiz
+// para evitar que os estilos flexbox do layout interfiram na quebra de página
+window.addEventListener('beforeprint', () => {
+const printDocument = document.getElementById('printDocument');
+const printRoot = document.getElementById('printRoot');
+printRoot.innerHTML = ''; // Limpa anterior
+printRoot.appendChild(printDocument.cloneNode(true));
+});
+
+// Chamada inicial para renderizar a primeira vez
+updatePreview();
+</script>
 </body>
 </html>
+
+
